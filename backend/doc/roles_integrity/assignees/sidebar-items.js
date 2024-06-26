@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["validate_create_link_role_to_assignee","validate_delete_link_role_to_assignee"]};

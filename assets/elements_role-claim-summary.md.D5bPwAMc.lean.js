@@ -1,0 +1,12 @@
+const __vite__fileDeps=["assets/chunks/api-docs.6GVAIKQB.js","assets/chunks/api-viewer-tabs.bc9mZ4w5.js","assets/chunks/tslib.es6.kHcLnhpD.js","assets/chunks/api-demo.Bsqmng5d.js","assets/chunks/profiles-context.DvfYCc7n.js","assets/chunks/roles-client.BsEGBmUD.js","assets/chunks/provide.xKMjkdAa.js","assets/chunks/property.B-ZXrebU.js","assets/chunks/signal-watcher.DeCe-Rpy.js","assets/chunks/roles-context.CGTbAhEv.js","assets/chunks/context.KiubJ2Dr.js","assets/chunks/role-claim-summary.DfaNbHCr.js","assets/chunks/chunk.MGEAXYVX.fO6xFSdZ.js","assets/chunks/chunk.C2LF7HHG.Cl1T-XsN.js"],__vite__mapDeps=i=>i.map(i=>__vite__fileDeps[i]);
+import{y as r,X as s,o as p,c as m,a3 as d,j as c}from"./chunks/framework.CsKJitAv.js";import{d as k,P as E,a as g,b as u,R as y,c as b,s as _,e as v,j as f,f as C}from"./chunks/roles-client.BsEGBmUD.js";import{n as F,i as A}from"./chunks/static.Da8DPRVO.js";const w=d("",12),D=c("api-docs",{src:"custom-elements.json",only:"role-claim-summary"},null,-1),P=[w,D],j=JSON.parse('{"title":"<role-claim-summary>","description":"","frontmatter":{},"headers":[],"relativePath":"elements/role-claim-summary.md","filePath":"elements/role-claim-summary.md"}'),x={name:"elements/role-claim-summary.md"},H=Object.assign(x,{setup(B){return r(async()=>{await s(()=>import("./chunks/api-docs.6GVAIKQB.js"),__vite__mapDeps([0,1,2])),await s(()=>import("./chunks/api-demo.Bsqmng5d.js"),__vite__mapDeps([3,1,2])),await s(()=>import("./chunks/profiles-context.DvfYCc7n.js"),__vite__mapDeps([4,2,5,6,7,8])),customElements.get("roles-context")||await s(()=>import("./chunks/roles-context.CGTbAhEv.js"),__vite__mapDeps([9,5,6,7,10])),customElements.get("role-claim-summary")||await s(()=>import("./chunks/role-claim-summary.DfaNbHCr.js"),__vite__mapDeps([11,12,7,5,8,13,10]));const a=await k(),i=new E(a,Array.from(a.keys())[0]),t=new g(new u(i,"roles_test")),e=new y,l=new b(e,"roles_test"),n=await _(),o=await e.create_role_claim(n),h=new v(l);f(F`
+    <profiles-context .store=${t}>
+      <roles-context .store=${h}>
+        <api-demo src="custom-elements.json" only="role-claim-summary" exclude-knobs="store">
+          <template data-element="role-claim-summary" data-target="host">
+            <role-claim-summary roleClaim-hash="${A(C(o.signed_action.hashed.hash))}"></role-claim-summary>
+          </template>
+        </api-demo>
+      </roles-context>
+    </profiles-context>
+  `,document.querySelector("element-demo"))}),(a,i)=>(p(),m("div",null,P))}});export{j as __pageData,H as default};

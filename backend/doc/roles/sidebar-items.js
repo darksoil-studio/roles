@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Signal"],"fn":["init","post_commit"],"mod":["all_roles","assignees","role_claim"]};

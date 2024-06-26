@@ -1,0 +1,23 @@
+[package]
+name = "roles"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "roles"
+
+[dependencies]
+hdk = { workspace = true }
+
+serde = { workspace = true }
+
+roles_integrity = { path = "../../integrity/roles", package = "roles_integrity" }
+
+[dev-dependencies]
+fixt = "0.3.1"
+futures = { version = "0.3.1", default-features = false }
+hdk = { workspace = true, features = ["encoding", "test_utils"] }
+holochain = { workspace = true }
+tokio = { version = "1.3", features = ["full"] }
+

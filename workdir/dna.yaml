@@ -1,0 +1,28 @@
+---
+manifest_version: "1"
+name: roles_test
+integrity:
+  network_seed: ~
+  properties: ~
+  origin_time: 1676140846503210
+  zomes:
+    - name: roles_integrity
+      hash: ~
+      bundled: "../target/wasm32-unknown-unknown/release/roles_integrity.wasm"
+      dependencies: ~    
+    - name: profiles_integrity
+      hash: ~
+      bundled: <NIX PACKAGE>
+      dependencies: ~
+coordinator:
+  zomes:
+    - name: roles
+      hash: ~
+      bundled: "../target/wasm32-unknown-unknown/release/roles.wasm"
+      dependencies:
+        - name: roles_integrity    
+    - name: profiles
+      hash: ~
+      bundled: <NIX PACKAGE>
+      dependencies:
+        - name: profiles_integrity

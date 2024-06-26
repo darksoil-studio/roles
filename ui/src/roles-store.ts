@@ -1,3 +1,5 @@
+import { RoleClaim } from './types.js';
+
 import { 
   collectionSignal, 
   liveLinksSignal, 
@@ -15,7 +17,23 @@ import { NewEntryAction, Record, ActionHash, EntryHash, AgentPubKey } from '@hol
 import { RolesClient } from './roles-client.js';
 
 export class RolesStore {
-
   constructor(public client: RolesClient) {}
   
+  /** Role Claim */
+
+  roleClaims = new LazyHoloHashMap((roleClaimHash: ActionHash) => ({
+    entry: immutableEntrySignal(() => this.client.getRoleClaim(roleClaimHash)),
+    deletes: deletesForEntrySignal(this.client, roleClaimHash, () => this.client.getAllDeletesForRoleClaim(roleClaimHash)),
+  }));
+  
+  /** All Roles */
+
+  allRoles = pipe(
+    collectionSignal(
+      this.client, 
+      () => this.client.getAllRoles(),
+      'AllRoles'
+    ),
+    allRoles => slice(this.roleClaims, allRoles.map(l => l.target))
+  );
 }

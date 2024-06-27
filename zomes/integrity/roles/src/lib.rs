@@ -28,6 +28,7 @@ pub enum EntryTypes {
 pub enum LinkTypes {
     RolesPath,
     RoleToAssignee,
+    PendingUnassignments,
 }
 
 #[hdk_extern]
@@ -172,6 +173,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 target_address,
                 tag,
             ),
+            LinkTypes::PendingUnassignments => validate_create_link_pending_unassignments(
+                action_hash(&op),
+                action,
+                base_address,
+                target_address,
+                tag,
+            ),
         },
         FlatOp::RegisterDeleteLink {
             link_type,
@@ -189,6 +197,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 tag,
             ),
             LinkTypes::RoleToAssignee => validate_delete_link_role_to_assignee(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
+            LinkTypes::PendingUnassignments => validate_delete_link_pending_unassigments(
                 action,
                 original_action,
                 base_address,
@@ -323,6 +338,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     target_address,
                     tag,
                 ),
+                LinkTypes::PendingUnassignments => validate_create_link_pending_unassignments(
+                    action_hash(&op),
+                    action,
+                    base_address,
+                    target_address,
+                    tag,
+                ),
             },
             OpRecord::DeleteLink {
                 original_action_hash,
@@ -354,6 +376,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         create_link.tag,
                     ),
                     LinkTypes::RoleToAssignee => validate_delete_link_role_to_assignee(
+                        action,
+                        create_link.clone(),
+                        base_address,
+                        create_link.target_address,
+                        create_link.tag,
+                    ),
+                    LinkTypes::PendingUnassignments => validate_delete_link_pending_unassigments(
                         action,
                         create_link.clone(),
                         base_address,

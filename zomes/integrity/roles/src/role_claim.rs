@@ -57,8 +57,8 @@ pub fn validate_agent_had_undeleted_role_claim_at_the_time(
         }
     }
 
-    return Ok(ValidateCallbackResult::Invalid(String::from(
-        "Agent did not have the RoleClaim at the time of committing the action",
+    return Ok(ValidateCallbackResult::Invalid(format!(
+        "Agent did not have the RoleClaim for the role {role} at the time of committing the action",
     )));
 }
 

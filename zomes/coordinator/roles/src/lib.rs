@@ -9,7 +9,6 @@ pub mod role_claim;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     // If I'm a progenitor, automatically claim the admin role
-
     let agent_info = agent_info()?;
     let progenitors = progenitors(())?;
 

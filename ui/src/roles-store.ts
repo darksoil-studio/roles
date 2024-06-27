@@ -1,8 +1,10 @@
 import {
 	collectionSignal,
 	fromPromise,
+	joinAsync,
 	liveLinksSignal,
 	pipe,
+	uniquify,
 } from '@holochain-open-dev/signals';
 import {
 	HashType,
@@ -10,21 +12,21 @@ import {
 	decodeComponent,
 	retype,
 } from '@holochain-open-dev/utils';
-import { decode } from '@msgpack/msgpack';
 
 import { RolesClient } from './roles-client.js';
+import { queryLiveEntriesSignal } from './signal.js';
 
 export class RolesStore {
 	constructor(public client: RolesClient) {}
 
 	/** Role Claim */
-
-	// roleClaims = new LazyHoloHashMap((roleClaimHash: ActionHash) => ({
-	// 	entry: immutableEntrySignal(() => this.client.getRoleClaim(roleClaimHash)),
-	// 	deletes: deletesForEntrySignal(this.client, roleClaimHash, () =>
-	// 		this.client.getAllDeletesForRoleClaim(roleClaimHash),
-	// 	),
-	// }));
+	myRoleClaims = new LazyMap((role: string) =>
+		queryLiveEntriesSignal(
+			this.client,
+			() => this.client.queryUndeletedRoleClaimsForRole(role),
+			'RoleClaim',
+		),
+	);
 
 	/** All Roles */
 
@@ -33,9 +35,13 @@ export class RolesStore {
 		allRoles => allRoles.map(l => decodeComponent(l.tag)),
 	);
 
+	private roleBasedAddress = new LazyMap((role: string) =>
+		fromPromise(() => this.client.roleBaseAddress(role)),
+	);
+
 	assignees = new LazyMap((role: string) =>
 		pipe(
-			fromPromise(() => this.client.roleBaseAddress(role)),
+			this.roleBasedAddress.get(role),
 			roleBaseAddress =>
 				liveLinksSignal(
 					this.client,
@@ -43,14 +49,34 @@ export class RolesStore {
 					() => this.client.getAssigneesForRole(role),
 					'RoleToAssignee',
 				),
-			() => this.pendingUnassigments,
-			async (pendingUnassigments, assignees) => {
+			() =>
+				joinAsync([
+					this.pendingUnassigments.get(),
+					this.myRoleClaims.get(role).get(),
+				]),
+			async ([pendingUnassigments, myRoleClaims], assigneesLinks) => {
+				let assignees = uniquify(
+					assigneesLinks.map(a => retype(a.target, HashType.AGENT)),
+				);
 				const myPendingUnassigmentsForThisRole = pendingUnassigments.filter(
 					pendingUnassigment =>
 						retype(pendingUnassigment.target, HashType.AGENT).toString() ===
 							this.client.client.myPubKey.toString() &&
 						pendingUnassigment.tag.toString() === role,
 				);
+
+				const myAssigneeLink = assigneesLinks.find(
+					a =>
+						retype(a.target, HashType.AGENT).toString() ===
+						this.client.client.myPubKey.toString(),
+				);
+
+				if (myAssigneeLink && myRoleClaims.length === 0) {
+					await this.client.createRoleClaim({
+						role,
+						assign_role_create_link_hash: myAssigneeLink.create_link_hash,
+					});
+				}
 
 				if (myPendingUnassigmentsForThisRole.length > 0) {
 					for (const link of myPendingUnassigmentsForThisRole) {
@@ -59,19 +85,18 @@ export class RolesStore {
 
 					assignees = assignees.filter(
 						assignee =>
-							retype(assignee.target, HashType.AGENT).toString() !==
-							this.client.client.myPubKey.toString(),
+							assignee.toString() !== this.client.client.myPubKey.toString(),
 					);
 				}
 
-				return assignees.map(a => retype(a.target, HashType.AGENT));
+				return assignees;
 			},
 		),
 	);
 
 	pendingUnassigments = collectionSignal(
 		this.client,
-		() => this.client.getPendingUnassigments(),
+		() => this.client.getPendingUnassignments(),
 		'PendingUnassigments',
 	);
 }

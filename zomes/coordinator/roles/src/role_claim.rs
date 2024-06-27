@@ -23,6 +23,7 @@ pub fn get_role_claim(role_claim_hash: ActionHash) -> ExternResult<Option<Record
     }
 }
 
+#[hdk_extern]
 pub fn query_undeleted_role_claims_for_role(role: String) -> ExternResult<Vec<Record>> {
     let filter = ChainQueryFilter::new()
         .entry_type(UnitEntryTypes::RoleClaim.try_into()?)

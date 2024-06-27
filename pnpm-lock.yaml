@@ -79,7 +79,7 @@ importers:
         version: 0.300.0(@types/react@18.3.3)
       '@holochain-open-dev/utils':
         specifier: ^0.300.0
-        version: 0.300.0
+        version: 0.300.1
       '@holochain/client':
         specifier: ^0.17.0
         version: 0.17.0
@@ -89,6 +89,9 @@ importers:
       '@msgpack/msgpack':
         specifier: ^2.8.0
         version: 2.8.0
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.2
       typescript:
         specifier: ^5.4.5
         version: 5.5.2
@@ -654,9 +657,6 @@ packages:
 
   '@holochain-open-dev/signals@0.300.0':
     resolution: {integrity: sha512-3qk/vsV1rUaL6mkaCP/MxeKWXx3isnqBzWA0Qe2nqBkXRs4b4w9wVdBZunhN5CKJEDz7/2hcE3fa7k0H8whMDA==}
-
-  '@holochain-open-dev/utils@0.300.0':
-    resolution: {integrity: sha512-wGS4zEufxSm45tLjKRUt+4jJ4UjXhUh228UDtEjqWY9oUpYMj2BDbgAqHUg7M9dqU0z9+FVmhdyUVQEzX5C0mg==}
 
   '@holochain-open-dev/utils@0.300.1':
     resolution: {integrity: sha512-HcVfxxrIqkOHe3EBcG0JqfpJJzj4YEnBNm60rPrD1S3pm693NZmtMgygwiEGmWX9m3up5k5qpg6q+BuFKodWRg==}
@@ -1631,6 +1631,9 @@ packages:
 
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
+
+  fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
 
   file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
@@ -3194,7 +3197,7 @@ snapshots:
     dependencies:
       '@holochain-open-dev/elements': 0.300.0(@types/react@18.3.3)
       '@holochain-open-dev/signals': 0.300.0(@types/react@18.3.3)
-      '@holochain-open-dev/utils': 0.300.0
+      '@holochain-open-dev/utils': 0.300.1
       '@holochain/client': 0.17.0
       '@lit/context': 1.1.2
       '@lit/localize': 0.12.1
@@ -3209,7 +3212,7 @@ snapshots:
 
   '@holochain-open-dev/signals@0.300.0(@types/react@18.3.3)':
     dependencies:
-      '@holochain-open-dev/utils': 0.300.0
+      '@holochain-open-dev/utils': 0.300.1
       '@holochain/client': 0.17.0
       '@shoelace-style/shoelace': 2.15.1(@types/react@18.3.3)
       async-signals: 0.1.11
@@ -3217,18 +3220,6 @@ snapshots:
       signal-polyfill: 0.1.1
     transitivePeerDependencies:
       - '@types/react'
-      - bufferutil
-      - utf-8-validate
-
-  '@holochain-open-dev/utils@0.300.0':
-    dependencies:
-      '@holochain/client': 0.17.0
-      '@msgpack/msgpack': 2.8.0
-      blakejs: 1.2.1
-      emittery: 1.0.3
-      lodash-es: 4.17.21
-      sort-keys: 5.0.0
-    transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
@@ -4384,6 +4375,8 @@ snapshots:
       reusify: 1.0.4
 
   fecha@4.2.3: {}
+
+  fflate@0.8.2: {}
 
   file-entry-cache@6.0.1:
     dependencies:

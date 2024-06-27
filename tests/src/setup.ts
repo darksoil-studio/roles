@@ -58,10 +58,6 @@ export async function setup(scenario: Scenario) {
 		{ appBundleSource },
 	]);
 
-	// Shortcut peer discovery through gossip and register all agents in every
-	// conductor of the scenario.
-	await scenario.shareAllAgents();
-
 	const aliceStore = new RolesStore(
 		new RolesClient(appWs as any, 'roles_test', 'roles'),
 	);

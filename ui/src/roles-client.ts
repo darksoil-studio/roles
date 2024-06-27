@@ -46,6 +46,16 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 		);
 	}
 
+	async queryUndeletedRoleClaimsForRole(
+		role: string,
+	): Promise<Array<EntryRecord<RoleClaim>>> {
+		const records: Record[] = await this.callZome(
+			'query_undeleted_role_claims_for_role',
+			role,
+		);
+		return records.map(r => new EntryRecord(r));
+	}
+
 	/** All Roles */
 
 	async getAllRoles(): Promise<Array<Link>> {
@@ -87,7 +97,7 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 
 	/** Pending Unassigments */
 
-	async getPendingUnassigments(): Promise<Array<Link>> {
-		return this.callZome('get_pending_unassigments', undefined);
+	async getPendingUnassignments(): Promise<Array<Link>> {
+		return this.callZome('get_pending_unassignments', undefined);
 	}
 }

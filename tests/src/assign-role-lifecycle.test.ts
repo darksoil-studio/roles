@@ -12,19 +12,19 @@ test.only('Assign role lifecycle', async () => {
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
-
 		let roles = await toPromise(alice.store.allRoles);
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
-		console.log('hey1', alice.player.conductor);
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
 
 		let admins = await toPromise(bob.store.assignees.get('admin'));
 		assert.equal(admins.length, 1);
-		assert.equal(cleanNodeDecoding(admins[0]), alice.player.agentPubKey);
-		console.log('hey2');
+		assert.equal(
+			cleanNodeDecoding(admins[0]).toString(),
+			new Uint8Array(alice.player.agentPubKey).toString(),
+		);
 
 		// Bob can't assign a role to itself
 		await expect(() =>
@@ -32,7 +32,6 @@ test.only('Assign role lifecycle', async () => {
 		).rejects.toThrowError();
 		await alice.store.client.assignRole('editor', bob.player.agentPubKey);
 
-		console.log('hey3');
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
 
@@ -40,7 +39,6 @@ test.only('Assign role lifecycle', async () => {
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
 
-		console.log('hey4');
 		let editors = await toPromise(bob.store.assignees.get('editors'));
 		assert.equal(editors.length, 1);
 		assert.equal(
@@ -48,7 +46,6 @@ test.only('Assign role lifecycle', async () => {
 			bob.player.agentPubKey.toString(),
 		);
 
-		console.log('hey5');
 		// Bob can't request unassigment of a role to itself
 		await expect(() =>
 			bob.store.client.requestUnassignRole('editor', bob.player.agentPubKey),
@@ -56,7 +53,6 @@ test.only('Assign role lifecycle', async () => {
 
 		let pendingUnassigments = await toPromise(bob.store.pendingUnassigments);
 		assert.equal(pendingUnassigments.length, 0);
-		console.log('hey6');
 
 		await alice.store.client.requestUnassignRole(
 			'editor',
@@ -65,7 +61,6 @@ test.only('Assign role lifecycle', async () => {
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
-		console.log('hey7');
 
 		pendingUnassigments = await toPromise(bob.store.pendingUnassigments);
 		assert.equal(pendingUnassigments.length, 1);

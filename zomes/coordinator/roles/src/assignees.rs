@@ -12,7 +12,7 @@ pub struct AssignRoleInput {
 pub type RequestUnassignRoleInput = AssignRoleInput;
 
 #[hdk_extern]
-pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
+pub fn assign_role(input: AssignRoleInput) -> ExternResult<ActionHash> {
     let path = role_path(&input.role)?;
     path.ensure()?;
 
@@ -21,9 +21,7 @@ pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
         input.assignee,
         LinkTypes::RoleToAssignee,
         input.role,
-    )?;
-
-    Ok(())
+    )
 }
 
 fn pending_unassignments_path() -> Path {

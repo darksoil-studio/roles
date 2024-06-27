@@ -37,6 +37,7 @@ export async function setup(scenario: Scenario) {
 
 	const appInfo = await aliceConductor.installApp(appBundleSource, {
 		agentPubKey: alicePubKey,
+		networkSeed: scenario.networkSeed,
 	});
 
 	const port = await aliceConductor.attachAppInterface();

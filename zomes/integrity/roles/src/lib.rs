@@ -33,6 +33,14 @@ pub enum LinkTypes {
 
 #[hdk_extern]
 pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
+    let progenitors = progenitors(())?;
+
+    if progenitors.len() == 0 {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "This DNA can't have no progenitors",
+        )));
+    }
+
     Ok(ValidateCallbackResult::Valid)
 }
 

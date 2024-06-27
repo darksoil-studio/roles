@@ -52,6 +52,10 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 		return this.callZome('get_all_roles', undefined);
 	}
 
+	async roleBaseAddress(role: string): Promise<EntryHash> {
+		return this.callZome('role_base_address', role);
+	}
+
 	/** Assignees */
 
 	async getAssigneesForRole(role: string): Promise<Array<Link>> {
@@ -68,14 +72,22 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	async requestUnassignRole(
 		role: string,
 		assignee: AgentPubKey,
-	): Promise<void> {
+	): Promise<ActionHash> {
 		await this.callZome('request_unassign_role', {
 			role,
 			assignee,
 		});
 	}
 
-	async unassignMyRole(role: string): Promise<void> {
-		return this.callZome('unassign_my_role', role);
+	async unassignMyRole(
+		pendingUnassigmentCreateLinkHash: ActionHash,
+	): Promise<void> {
+		return this.callZome('unassign_my_role', pendingUnassigmentCreateLinkHash);
+	}
+
+	/** Pending Unassigments */
+
+	async getPendingUnassigments(): Promise<Array<Link>> {
+		return this.callZome('get_pending_unassigments', undefined);
 	}
 }

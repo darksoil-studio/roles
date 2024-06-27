@@ -1,4 +1,4 @@
-use hdi::{hash_path::path::root_hash, prelude::*};
+use hdi::prelude::*;
 
 use crate::LinkTypes;
 
@@ -12,7 +12,10 @@ pub fn role_base_address(role: String) -> ExternResult<EntryHash> {
 }
 
 pub fn role_path(role: &String) -> ExternResult<TypedPath> {
-    Path::from(format!("all_roles.{role}")).typed(LinkTypes::RolesPath)
+    let all_roles = all_roles_path()?;
+    let mut components = all_roles.path.0;
+    components.push(Component::from(role));
+    Path::from(components).typed(LinkTypes::RolesPath)
 }
 
 pub fn validate_create_link_roles_path(
@@ -32,16 +35,10 @@ pub fn validate_create_link_roles_path(
         )));
     };
 
-    let all_roles_path_entry_hash = all_roles_path()?.path_entry_hash()?;
+    let all_roles_path_entry_hash = all_roles_path()?.path.path_entry_hash()?;
 
-    if base_address.eq(&root_hash()?) {
-        if target_entry_hash.eq(&all_roles_path_entry_hash) {
-            return Ok(ValidateCallbackResult::Valid);
-        } else {
-            return Ok(ValidateCallbackResult::Invalid(String::from(
-                "Root path link must point to the all roles entry path",
-            )));
-        }
+    if target_entry_hash.eq(&all_roles_path_entry_hash) {
+        return Ok(ValidateCallbackResult::Valid);
     }
 
     if !base_entry_hash.eq(&all_roles_path_entry_hash) {
@@ -50,9 +47,16 @@ pub fn validate_create_link_roles_path(
         )));
     }
 
-    let Ok(role) = String::from_utf8(tag.0) else {
+    let bytes = SerializedBytes::from(UnsafeBytes::from(tag.0));
+    let Ok(component) = Component::try_from(bytes) else {
         return Ok(ValidateCallbackResult::Invalid(String::from(
-            "RolesPath link tag must contain the role",
+            "Could not convert bytes to component",
+        )));
+    };
+
+    let Ok(role) = String::try_from(&component) else {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "Could not convert component from path",
         )));
     };
 

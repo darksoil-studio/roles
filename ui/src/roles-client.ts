@@ -72,7 +72,7 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	async requestUnassignRole(
 		role: string,
 		assignee: AgentPubKey,
-	): Promise<ActionHash> {
+	): Promise<void> {
 		await this.callZome('request_unassign_role', {
 			role,
 			assignee,

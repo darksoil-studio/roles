@@ -20,7 +20,7 @@ pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
         path.path_entry_hash()?,
         input.assignee,
         LinkTypes::RoleToAssignee,
-        (),
+        input.role,
     )?;
 
     Ok(())

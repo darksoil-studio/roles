@@ -23,6 +23,8 @@ pub fn validate_agent_had_undeleted_role_claim_at_the_time(
         })
         .collect();
 
+    let zome_info = zome_info()?;
+
     let undeleted_role_claim_creates: Vec<Create> = activity
         .iter()
         .filter_map(|activity| match &activity.action.hashed.content {
@@ -31,6 +33,12 @@ pub fn validate_agent_had_undeleted_role_claim_at_the_time(
                 false => Some(create.clone()),
             },
             _ => None,
+        })
+        .filter(|create| {
+            let EntryType::App(app_entry_type) = &create.entry_type else {
+                return false;
+            };
+            app_entry_type.zome_index() == zome_info.id
         })
         // TODO: filter here for RoleClaim entry type if more entry types are added to this zome
         .collect();
@@ -71,6 +79,8 @@ pub fn validate_create_role_claim(
         })
         .collect();
 
+    let zome_info = zome_info()?;
+
     let undeleted_role_claim_creates: Vec<Create> = activity
         .iter()
         .filter_map(|activity| match &activity.action.hashed.content {
@@ -79,6 +89,12 @@ pub fn validate_create_role_claim(
                 false => Some(create.clone()),
             },
             _ => None,
+        })
+        .filter(|create| {
+            let EntryType::App(app_entry_type) = &create.entry_type else {
+                return false;
+            };
+            app_entry_type.zome_index() == zome_info.id
         })
         // TODO: filter here for RoleClaim entry type if more entry types are added to this zome
         .collect();

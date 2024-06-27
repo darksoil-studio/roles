@@ -2,7 +2,7 @@ use hdi::prelude::*;
 
 use crate::validate_agent_had_undeleted_role_claim_at_the_time;
 
-pub const ADMIN_ROLE: &'static str = "ADMIN";
+pub const ADMIN_ROLE: &'static str = "admin";
 
 pub fn validate_agent_was_admin_at_the_time(
     agent: &AgentPubKey,

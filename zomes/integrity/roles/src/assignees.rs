@@ -1,6 +1,6 @@
 use hdi::prelude::*;
 
-use crate::{role_path, validate_agent_was_admin_at_the_time, LinkTypes, RoleClaim};
+use crate::{progenitors, role_path, validate_agent_was_admin_at_the_time, LinkTypes, RoleClaim};
 
 pub fn validate_create_link_role_to_assignee(
     action_hash: &ActionHash,
@@ -10,7 +10,7 @@ pub fn validate_create_link_role_to_assignee(
     tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     // Check the entry type for the given action hash
-    let Some(_assignee) = target_address.into_agent_pub_key() else {
+    let Some(assignee) = target_address.into_agent_pub_key() else {
         return Ok(ValidateCallbackResult::Invalid(
             "No action hash associated with link".to_string(),
         ));
@@ -26,11 +26,29 @@ pub fn validate_create_link_role_to_assignee(
             "No entry hash associated with the base of the link".to_string(),
         ));
     };
+
     if !role_path(&role)?.path_entry_hash()?.eq(&base_entry_hash) {
         return Ok(ValidateCallbackResult::Invalid(
             "Invalid path entry hash at the base".to_string(),
         ));
     };
+
+    let progenitors = progenitors(())?;
+
+    // If this is the progenitor assigning the admin role to itself at init time, that's okey
+    if progenitors.contains(&assignee) {
+        let activity = must_get_agent_activity(assignee, ChainFilter::new(action_hash.clone()))?;
+
+        if let None = activity
+            .into_iter()
+            .find(|activity| match activity.action.action() {
+                Action::InitZomesComplete(_) => true,
+                _ => false,
+            })
+        {
+            return Ok(ValidateCallbackResult::Valid);
+        }
+    }
 
     let was_admin = validate_agent_was_admin_at_the_time(&action.author, action_hash)?;
     let ValidateCallbackResult::Valid = was_admin else {

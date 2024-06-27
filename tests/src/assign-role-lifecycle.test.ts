@@ -19,13 +19,10 @@ test('Assign role lifecycle', async () => {
 	await runScenario(async scenario => {
 		const { alice, bob } = await setup(scenario);
 
-		console.log('heyyy');
-
 		let roles = await toPromise(alice.store.allRoles);
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
 
-		console.log('heyyy');
 		let admins = await toPromise(bob.store.assignees.get('admin'));
 		assert.equal(admins.length, 1);
 		assert.equal(cleanNodeDecoding(admins[0]), alice.player.agentPubKey);

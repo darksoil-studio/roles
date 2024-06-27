@@ -4,7 +4,13 @@ import {
 	liveLinksSignal,
 	pipe,
 } from '@holochain-open-dev/signals';
-import { HashType, LazyMap, retype } from '@holochain-open-dev/utils';
+import {
+	HashType,
+	LazyMap,
+	decodeComponent,
+	retype,
+} from '@holochain-open-dev/utils';
+import { decode } from '@msgpack/msgpack';
 
 import { RolesClient } from './roles-client.js';
 
@@ -24,7 +30,7 @@ export class RolesStore {
 
 	allRoles = pipe(
 		collectionSignal(this.client, () => this.client.getAllRoles(), 'AllRoles'),
-		allRoles => allRoles.map(l => l.tag.toString()),
+		allRoles => allRoles.map(l => decodeComponent(l.tag)),
 	);
 
 	assignees = new LazyMap((role: string) =>

@@ -54,39 +54,48 @@ export class RolesStore {
 					this.pendingUnassigments.get(),
 					this.myRoleClaims.get(role).get(),
 				]),
-			async ([pendingUnassigments, myRoleClaims], assigneesLinks) => {
+			async ([pendingUnassignments, myRoleClaims], assigneesLinks) => {
 				let assignees = uniquify(
 					assigneesLinks.map(a => retype(a.target, HashType.AGENT)),
 				);
-				const myPendingUnassigmentsForThisRole = pendingUnassigments.filter(
+
+				/** If I have been requested to unassign a role and I still have it, unassign it */
+
+				const myPendingUnassignmentsForThisRole = pendingUnassignments.filter(
 					pendingUnassigment =>
 						retype(pendingUnassigment.target, HashType.AGENT).toString() ===
-							this.client.client.myPubKey.toString() &&
+							new Uint8Array(this.client.client.myPubKey).toString() &&
 						pendingUnassigment.tag.toString() === role,
 				);
-
-				const myAssigneeLink = assigneesLinks.find(
-					a =>
-						retype(a.target, HashType.AGENT).toString() ===
-						this.client.client.myPubKey.toString(),
-				);
-
-				if (myAssigneeLink && myRoleClaims.length === 0) {
-					await this.client.createRoleClaim({
-						role,
-						assign_role_create_link_hash: myAssigneeLink.create_link_hash,
-					});
-				}
-
-				if (myPendingUnassigmentsForThisRole.length > 0) {
-					for (const link of myPendingUnassigmentsForThisRole) {
+				if (myPendingUnassignmentsForThisRole.length > 0) {
+					for (const link of myPendingUnassignmentsForThisRole) {
 						await this.client.unassignMyRole(link.create_link_hash);
 					}
 
 					assignees = assignees.filter(
 						assignee =>
-							assignee.toString() !== this.client.client.myPubKey.toString(),
+							assignee.toString() !==
+							new Uint8Array(this.client.client.myPubKey).toString(),
 					);
+				}
+
+				/** If I am assigned to the role but haven't claimed it, do so */
+
+				const myAssigneeLink = assigneesLinks.find(
+					a =>
+						retype(a.target, HashType.AGENT).toString() ===
+						new Uint8Array(this.client.client.myPubKey).toString(),
+				);
+
+				if (
+					myPendingUnassignmentsForThisRole.length === 0 &&
+					myAssigneeLink &&
+					myRoleClaims.length === 0
+				) {
+					await this.client.createRoleClaim({
+						role,
+						assign_role_create_link_hash: myAssigneeLink.create_link_hash,
+					});
 				}
 
 				return assignees;
@@ -94,9 +103,14 @@ export class RolesStore {
 		),
 	);
 
-	pendingUnassigments = collectionSignal(
-		this.client,
-		() => this.client.getPendingUnassignments(),
-		'PendingUnassigments',
+	pendingUnassigments = pipe(
+		collectionSignal(
+			this.client,
+			() => this.client.getPendingUnassignments(),
+			'PendingUnassignments',
+		),
+		async pendingUnassigments => {
+			return pendingUnassigments;
+		},
 	);
 }

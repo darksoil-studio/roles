@@ -44,7 +44,7 @@ pub fn request_unassign_role(input: RequestUnassignRoleInput) -> ExternResult<()
 pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<()> {
     let Some(record) = get(pending_unassignment_link.clone(), GetOptions::network())? else {
         return Err(wasm_error!(WasmErrorInner::Guest(String::from(
-            "PendingUnassigment link not found"
+            "PendingUnassignment link not found"
         ))));
     };
 
@@ -55,10 +55,10 @@ pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<(
     };
 
     let Ok(Some(LinkTypes::PendingUnassignments)) =
-        LinkTypes::from_type(zome_info()?.id, create_link.link_type)
+        LinkTypes::from_type(create_link.zome_index, create_link.link_type)
     else {
-        return Err(wasm_error!(WasmErrorInner::Guest(String::from(
-            "Invalid LinkType"
+        return Err(wasm_error!(WasmErrorInner::Guest(format!(
+            "Invalid LinkType",
         ))));
     };
 
@@ -70,21 +70,21 @@ pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<(
 
     let role_claim_records = query_undeleted_role_claims_for_role(role.clone())?;
 
-    if role_claim_records.len() == 0 {
-        return Err(wasm_error!(WasmErrorInner::Guest(String::from(
+    let role_claim_record = if role_claim_records.len() == 0 {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
             "RoleClaim not found in our source chain"
-        ))));
-    } else if role_claim_records.len() > 0 {
-        return Err(wasm_error!(WasmErrorInner::Guest(String::from(
+        ))))
+    } else if role_claim_records.len() > 1 {
+        Err(wasm_error!(WasmErrorInner::Guest(format!(
             "Unreachable: can't have more than one undeleted RoleClaim for the same role"
-        ))));
-    }
+        ))))
+    } else {
+        Ok(role_claim_records[0].clone())
+    }?;
 
-    for role_claim_record in role_claim_records {
-        let role_claim = RoleClaim::try_from(role_claim_record.clone())?;
-        delete_entry(role_claim_record.action_address().clone())?;
-        delete_link(role_claim.assign_role_create_link_hash)?;
-    }
+    let role_claim = RoleClaim::try_from(role_claim_record.clone())?;
+    delete_entry(role_claim_record.action_address().clone())?;
+    delete_link(role_claim.assign_role_create_link_hash)?;
 
     delete_link(pending_unassignment_link)?;
     Ok(())

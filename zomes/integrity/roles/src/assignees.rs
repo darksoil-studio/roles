@@ -64,7 +64,12 @@ pub fn validate_delete_link_role_to_assignee(
     _target: AnyLinkableHash,
     tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    if !action.author.eq(&original_action.author) {
+    let Some(assignee) = original_action.target_address.into_agent_pub_key() else {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "RoleToAssignee must point to an AgentPubKey",
+        )));
+    };
+    if !action.author.eq(&assignee) {
         return Ok(ValidateCallbackResult::Invalid(String::from(
             "Only assignees can unassign themselves",
         )));
@@ -122,7 +127,12 @@ pub fn validate_delete_link_pending_unassigments(
     _target: AnyLinkableHash,
     tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    if !action.author.eq(&original_action.author) {
+    let Some(assignee) = original_action.target_address.into_agent_pub_key() else {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "RoleToAssignee must point to an AgentPubKey",
+        )));
+    };
+    if !action.author.eq(&assignee) {
         return Ok(ValidateCallbackResult::Invalid(String::from(
             "Only assignees can unassign themselves",
         )));
@@ -161,7 +171,7 @@ pub fn validate_delete_link_pending_unassigments(
 
     if !role_in_role_to_assignee_link.eq(&role) {
         return Ok(ValidateCallbackResult::Invalid(String::from(
-            "The role in the RoleToAssignee link pointed to by the previous DeleteLink is not the same role as the PendingUnassigment link role",
+            "The role in the RoleToAssignee link pointed to by the previous DeleteLink is not the same role as the PendingUnassignment link role",
         )));
     }
 

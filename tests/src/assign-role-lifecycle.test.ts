@@ -6,7 +6,7 @@ import { assert, expect, test } from 'vitest';
 
 import { setup } from './setup.js';
 
-test.only('Assign role lifecycle', async () => {
+test('Assign role lifecycle', async () => {
 	await runScenario(async scenario => {
 		const { alice, bob } = await setup(scenario);
 
@@ -22,7 +22,7 @@ test.only('Assign role lifecycle', async () => {
 		let admins = await toPromise(bob.store.assignees.get('admin'));
 		assert.equal(admins.length, 1);
 		assert.equal(
-			cleanNodeDecoding(admins[0]).toString(),
+			admins[0].toString(),
 			new Uint8Array(alice.player.agentPubKey).toString(),
 		);
 
@@ -36,15 +36,20 @@ test.only('Assign role lifecycle', async () => {
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
 
 		roles = await toPromise(bob.store.allRoles);
-		assert.equal(roles.length, 1);
-		assert.equal(roles[0], 'admin');
+		assert.equal(roles.length, 2);
+		assert.ok(roles.includes('admin'));
+		assert.ok(roles.includes('editor'));
 
-		let editors = await toPromise(bob.store.assignees.get('editors'));
+		let editors = await toPromise(bob.store.assignees.get('editor'));
 		assert.equal(editors.length, 1);
 		assert.equal(
-			cleanNodeDecoding(editors[0]).toString(),
-			bob.player.agentPubKey.toString(),
+			editors[0].toString(),
+			new Uint8Array(bob.player.agentPubKey).toString(),
 		);
+
+		let roleClaims =
+			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
+		assert.equal(roleClaims.length, 1);
 
 		// Bob can't request unassigment of a role to itself
 		await expect(() =>
@@ -66,7 +71,7 @@ test.only('Assign role lifecycle', async () => {
 		assert.equal(pendingUnassigments.length, 1);
 		assert.equal(
 			retype(pendingUnassigments[0].target, HashType.AGENT).toString(),
-			bob.player.agentPubKey.toString(),
+			new Uint8Array(bob.player.agentPubKey).toString(),
 		);
 
 		// Alice can't unassign bob's role
@@ -75,13 +80,15 @@ test.only('Assign role lifecycle', async () => {
 				pendingUnassigments[0].create_link_hash,
 			),
 		).rejects.toThrowError();
-		await bob.store.client.unassignMyRole(
-			pendingUnassigments[0].create_link_hash,
-		);
-		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
-		editors = await toPromise(bob.store.assignees.get('editors'));
+
+		// Bob will delete their role claim automatically when getting assignees
+		editors = await toPromise(bob.store.assignees.get('editor'));
 		assert.equal(editors.length, 0);
+
+		roleClaims =
+			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
+		assert.equal(roleClaims.length, 0);
 	});
 });
 
@@ -101,7 +108,10 @@ test('Admin can assign admin that assigns a role', async () => {
 
 		let admins = await toPromise(bob.store.assignees.get('admin'));
 		assert.equal(admins.length, 1);
-		assert.equal(cleanNodeDecoding(admins[0]), alice.player.agentPubKey);
+		assert.equal(
+			admins[0].toString(),
+			new Uint8Array(alice.player.agentPubKey).toString(),
+		);
 
 		// Bob can't assign a role to itself
 		await expect(() =>
@@ -130,17 +140,47 @@ test('Admin can assign admin that assigns a role', async () => {
 		);
 
 		pendingUnassigments = await toPromise(carol.store.pendingUnassigments);
+		assert.equal(pendingUnassigments.length, 0);
+
+		let editors = await toPromise(carol.store.assignees.get('editor'));
+		assert.equal(editors.length, 1);
+		assert.equal(
+			editors[0].toString(),
+			new Uint8Array(carol.player.agentPubKey).toString(),
+		);
+		let roleClaims =
+			await carol.store.client.queryUndeletedRoleClaimsForRole('editor');
+		assert.equal(roleClaims.length, 1);
+
+		await bob.store.client.requestUnassignRole(
+			'editor',
+			carol.player.agentPubKey,
+		);
+
+		// Wait for the created entry to be propagated to the other node.
+		await dhtSync(
+			[alice.player, bob.player, carol.player],
+			alice.player.cells[0].cell_id[0],
+		);
+
+		pendingUnassigments = await toPromise(carol.store.pendingUnassigments);
 		assert.equal(pendingUnassigments.length, 1);
 		assert.equal(
 			retype(pendingUnassigments[0].target, HashType.AGENT).toString(),
-			carol.player.agentPubKey.toString(),
+			new Uint8Array(carol.player.agentPubKey).toString(),
 		);
 
-		const editors = await toPromise(carol.store.assignees.get('editor'));
+		// Bob can't unassign Carol's role
+		await expect(() =>
+			bob.store.client.unassignMyRole(pendingUnassigments[0].create_link_hash),
+		).rejects.toThrowError();
+
+		// Carol will delete their role claim automatically when getting assignees
+		editors = await toPromise(carol.store.assignees.get('editor'));
 		assert.equal(editors.length, 0);
-		assert.equal(
-			cleanNodeDecoding(editors[0]).toString(),
-			carol.player.agentPubKey.toString(),
-		);
+
+		roleClaims =
+			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
+		assert.equal(roleClaims.length, 0);
 	});
 });

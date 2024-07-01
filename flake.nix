@@ -28,7 +28,7 @@
   };
 
   outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } rec {
       imports = [
         ./zomes/integrity/roles/zome.nix
         ./zomes/coordinator/roles/zome.nix
@@ -37,15 +37,55 @@
         ./workdir/happ.nix
       ];
 
+      flake = {
+        lib.network-with-progenitor =
+          { pkgs, happ, roles_to_modify, ui_port, holochain }:
+          pkgs.writeShellApplication {
+            name = "run-network";
+
+            runtimeInputs = [
+              happ
+              holochain.packages.holochain
+              holochain.packages.hc-launch
+            ];
+
+            text = ''
+              ${
+                pkgs.writeScript "network" (builtins.readFile ./network.sh)
+              } ${happ} ${roles_to_modify} ${builtins.toString ui_port}
+            '';
+          };
+      };
+
       systems = builtins.attrNames inputs.holochain.devShells;
-      perSystem = { inputs', config, pkgs, system, ... }: {
+      perSystem = { inputs', self', config, pkgs, system, ... }: rec {
+        packages.launch-progenitor = pkgs.writeShellApplication {
+          name = "launch-progenitor";
+          runtimeInputs = [ inputs'.holochain.packages.hc-launch ];
+
+          text = ''
+            echo "hi"
+          '';
+        };
+
+        packages.network = flake.lib.network-with-progenitor {
+          inherit pkgs;
+          holochain = inputs'.holochain;
+          happ = self'.packages.roles_test_happ;
+          roles_to_modify = "roles_test";
+          ui_port = 8888;
+        };
+
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             inputs'.hc-infra.devShells.synchronized-pnpm
             inputs'.holochain.devShells.holonix
           ];
 
-          packages = [ inputs'.scaffolding.packages.hc-scaffold-zome-template ];
+          packages = [
+            inputs'.scaffolding.packages.hc-scaffold-zome-template
+            packages.launch-progenitor
+          ];
         };
 
         packages.scaffold = pkgs.symlinkJoin {

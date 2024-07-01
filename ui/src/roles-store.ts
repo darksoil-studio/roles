@@ -16,8 +16,20 @@ import {
 import { RolesClient } from './roles-client.js';
 import { queryLiveEntriesSignal } from './signal.js';
 
+export interface RoleConfig {
+	name: string;
+	description: string;
+}
+
+export interface RolesStoreConfig {
+	roles_config: Record<string, RoleConfig>;
+}
+
 export class RolesStore {
-	constructor(public client: RolesClient) {}
+	constructor(
+		public client: RolesClient,
+		public config: RolesStoreConfig,
+	) {}
 
 	/** Role Claim */
 	myRoleClaims = new LazyMap((role: string) =>

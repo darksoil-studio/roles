@@ -11,7 +11,9 @@ roles:
       bundled: "./roles_test.dna"
       modifiers:
         network_seed: ~
-        properties: ~
+        properties: 
+          progenitors: 
+            - uhCAk1VUf7Cu2X_fsr3uYhS_D3Pn5F2sq5vLbc9qu10DGL7H-ZdWX
         origin_time: ~
       version: ~
       clone_limit: 0

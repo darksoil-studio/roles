@@ -1,11 +1,65 @@
-import { AsyncResult, AsyncSignal, Signal } from '@holochain-open-dev/signals';
+import {
+	AsyncResult,
+	AsyncSignal,
+	JoinAsyncOptions,
+	Signal,
+	joinAsync,
+} from '@holochain-open-dev/signals';
 import {
 	ActionCommittedSignal,
 	EntryRecord,
+	GetonlyMap,
 	ZomeClient,
 } from '@holochain-open-dev/utils';
 import { HoloHash } from '@holochain/client';
 import { encode } from '@msgpack/msgpack';
+
+export function mapValues<K extends string, V, U>(
+	map: ReadonlyMap<K, V>,
+	mappingFn: (value: V, key: K) => U,
+): ReadonlyMap<K, U> {
+	const mappedMap = new Map<K, U>();
+
+	for (const [key, value] of map.entries()) {
+		mappedMap.set(key, mappingFn(value, key));
+	}
+	return mappedMap;
+}
+
+export function joinAsyncMap<K extends string, T>(
+	map: ReadonlyMap<K, AsyncResult<T>>,
+	joinOptions?: JoinAsyncOptions,
+): AsyncResult<ReadonlyMap<K, T>> {
+	const resultsArray = Array.from(map.entries()).map(([key, result]) => {
+		if (result.status !== 'completed') return result;
+		const value = [key, result.value] as [K, T];
+		return {
+			status: 'completed',
+			value,
+		} as AsyncResult<[K, T]>;
+	});
+	const arrayResult = joinAsync(resultsArray, joinOptions);
+
+	if (arrayResult.status !== 'completed') return arrayResult;
+
+	const value = new Map<K, T>(arrayResult.value);
+	return {
+		status: 'completed',
+		value,
+	} as AsyncResult<ReadonlyMap<K, T>>;
+}
+
+export function slice<K extends string, V>(
+	map: GetonlyMap<K, V>,
+	keys: K[],
+): ReadonlyMap<K, V> {
+	const newMap = new Map<K, V>();
+
+	for (const key of keys) {
+		newMap.set(key, map.get(key));
+	}
+	return newMap;
+}
 
 function areArrayHashesEqual(
 	array1: Array<HoloHash>,

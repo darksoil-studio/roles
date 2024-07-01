@@ -1,117 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <meta name="Description" content="Put your description here." />
-    <base href="/" />
-    
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-        background-color: #ededed;
-        height: 100%;
-        width: 100%;
-      }
-      
-      body {
-        display: flex;
-      }
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+		/>
+		<meta name="Description" content="Put your description here." />
+		<base href="/" />
 
-    </style>
-    <title>Roles</title>
-  </head>
+		<style>
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: sans-serif;
+				background-color: #ededed;
+				height: 100%;
+				width: 100%;
+			}
 
-  <body>
-    <demo-app></demo-app>
+			body {
+				display: flex;
+			}
+		</style>
+		<title>Roles</title>
+	</head>
 
-    <script type="module">
-import '@shoelace-style/shoelace/dist/themes/light.css';
-import { ContextProvider } from '@lit/context';
-import { LitElement, css, html } from 'lit';
-import { AppWebsocket } from '@holochain/client';
-import { sharedStyles } from '@holochain-open-dev/elements';
-import { SignalWatcher } from '@holochain-open-dev/signals';
-import '@holochain-open-dev/elements/dist/elements/display-error.js';
-import {
-  ProfilesClient,
-  ProfilesStore,
-  profilesStoreContext
-} from '@holochain-open-dev/profiles';
-import '@holochain-open-dev/profiles/dist/elements/profile-prompt.js';
-import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+	<body>
+		<demo-app></demo-app>
 
-import '../src/elements/roles-context.ts';
-import { RolesStore, RolesClient } from '../src/index.ts';
+		<script type="module">
+			import { sharedStyles } from '@holochain-open-dev/elements';
+			import '@holochain-open-dev/elements/dist/elements/display-error.js';
+			import {
+				ProfilesClient,
+				ProfilesStore,
+				profilesStoreContext,
+			} from '@holochain-open-dev/profiles';
+			import '@holochain-open-dev/profiles/dist/elements/profile-prompt.js';
+			import { SignalWatcher } from '@holochain-open-dev/signals';
+			import { AppWebsocket } from '@holochain/client';
+			import { ContextProvider } from '@lit/context';
+			import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+			import '@shoelace-style/shoelace/dist/themes/light.css';
+			import { LitElement, css, html } from 'lit';
 
-export class DemoApp extends SignalWatcher(LitElement) {
+			import '../src/elements/all-roles.ts';
+			import '../src/elements/roles-context.ts';
+			import { RolesClient, RolesStore } from '../src/index.ts';
 
-  constructor() {
-    super();
-    this._loading = true;
-    this._view = { view: 'main' };
-  }
+			export class DemoApp extends SignalWatcher(LitElement) {
+				constructor() {
+					super();
+					this._loading = true;
+					this._view = { view: 'main' };
+				}
 
-  async firstUpdated() {
-    this._client = await AppWebsocket.connect();
+				async firstUpdated() {
+					this._client = await AppWebsocket.connect();
 
-    await this.initStores(this._client);
+					await this.initStores(this._client);
 
-    this._loading = false;
-    this.requestUpdate();
-  }
+					this._loading = false;
+					this.requestUpdate();
+				}
 
-  async initStores(appClient) {
-    const profilesStore = new ProfilesStore(new ProfilesClient(appClient, 'roles_test'));
-    new ContextProvider(this, profilesStoreContext, profilesStore);
-    
-    this._rolesStore = new RolesStore(new RolesClient(appClient, 'roles_test'));
-  }
+				async initStores(appClient) {
+					const profilesStore = new ProfilesStore(
+						new ProfilesClient(appClient, 'roles_test'),
+					);
+					new ContextProvider(this, profilesStoreContext, profilesStore);
 
-  renderContent() {
-    return html`
-      <roles-context .store=${this._rolesStore}>
-        <!-- TODO: add here the content of your application -->
-      </roles-context>
-    `;
-  }
+					this._rolesStore = new RolesStore(
+						new RolesClient(appClient, 'roles_test'),
+						{
+							roles_config: {
+								editor: {
+									name: 'Editor',
+									description: 'Can create special entries',
+								},
+							},
+						},
+					);
+				}
 
-  render() {
-    if (this._loading)
-      return html`<div
-        class="row"
-        style="flex: 1; height: 100%; align-items: center; justify-content: center;"
-      >
-        <sl-spinner></sl-spinner>
-      </div>`;
+				renderContent() {
+					return html`
+						<roles-context .store=${this._rolesStore}>
+							<all-roles></all-roles>
 
-    return html`
-        <div class="fill row" style="width: 100vw; height: 100%;">
-          <profile-prompt style="flex: 1;">
-            ${this.renderContent()}
-          </profile-prompt>
-        </div>
-    `;
-  }
+							<sl-button
+								@click=${() =>
+									this._rolesStore.client.client.callZome({
+										role_name: 'roles_test',
+										zome_name: 'example',
+										fn_name: 'create_example',
+										payload: 'example',
+									})}
+								>Create special entry</sl-button
+							>
+						</roles-context>
+					`;
+				}
 
-  static styles = [
-    css`
-      :host {
-        display: flex;
-        flex: 1;
-      }
-    `,
-    sharedStyles,
-  ];
-}
-      
-      customElements.define('demo-app', DemoApp);
-    </script>
-  </body>
+				render() {
+					if (this._loading)
+						return html`<div
+							class="row"
+							style="flex: 1; height: 100%; align-items: center; justify-content: center;"
+						>
+							<sl-spinner></sl-spinner>
+						</div>`;
+
+					return html`
+						<div class="fill row" style="width: 100vw; height: 100%;">
+							<profile-prompt style="flex: 1;">
+								${this.renderContent()}
+							</profile-prompt>
+						</div>
+					`;
+				}
+
+				static styles = [
+					css`
+						:host {
+							display: flex;
+							flex: 1;
+						}
+					`,
+					sharedStyles,
+				];
+			}
+
+			customElements.define('demo-app', DemoApp);
+		</script>
+	</body>
 </html>

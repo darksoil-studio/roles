@@ -4,7 +4,17 @@ import { cleanNodeDecoding } from '@holochain-open-dev/utils/dist/clean-node-dec
 import { dhtSync, pause, runScenario } from '@holochain/tryorama';
 import { assert, expect, test } from 'vitest';
 
+import { RolesStore } from '../../ui/src/roles-store.js';
 import { setup } from './setup.js';
+
+function createExampleEntryThatOnlyEditorsCanCreate(rolesStore: RolesStore) {
+	return rolesStore.client.client.callZome({
+		role_name: 'roles_test',
+		zome_name: 'example',
+		fn_name: 'create_example',
+		payload: 'example',
+	});
+}
 
 test('Assign role lifecycle', async () => {
 	await runScenario(async scenario => {
@@ -15,6 +25,10 @@ test('Assign role lifecycle', async () => {
 		let roles = await toPromise(alice.store.allRoles);
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
+
+		await expect(() =>
+			createExampleEntryThatOnlyEditorsCanCreate(alice.store),
+		).rejects.toThrowError();
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
@@ -29,6 +43,9 @@ test('Assign role lifecycle', async () => {
 		// Bob can't assign a role to itself
 		await expect(() =>
 			bob.store.client.assignRole('editor', bob.player.agentPubKey),
+		).rejects.toThrowError();
+		await expect(() =>
+			createExampleEntryThatOnlyEditorsCanCreate(bob.store),
 		).rejects.toThrowError();
 		await alice.store.client.assignRole('editor', bob.player.agentPubKey);
 
@@ -50,6 +67,8 @@ test('Assign role lifecycle', async () => {
 		let roleClaims =
 			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
 		assert.equal(roleClaims.length, 1);
+
+		await createExampleEntryThatOnlyEditorsCanCreate(bob.store);
 
 		// Bob can't request unassigment of a role to itself
 		await expect(() =>
@@ -89,6 +108,10 @@ test('Assign role lifecycle', async () => {
 		roleClaims =
 			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
 		assert.equal(roleClaims.length, 0);
+
+		await expect(() =>
+			createExampleEntryThatOnlyEditorsCanCreate(bob.store),
+		).rejects.toThrowError();
 	});
 });
 
@@ -131,6 +154,10 @@ test('Admin can assign admin that assigns a role', async () => {
 		let pendingUnassigments = await toPromise(bob.store.pendingUnassigments);
 		assert.equal(pendingUnassigments.length, 0);
 
+		await expect(() =>
+			createExampleEntryThatOnlyEditorsCanCreate(carol.store),
+		).rejects.toThrowError();
+
 		await bob.store.client.assignRole('editor', carol.player.agentPubKey);
 
 		// Wait for the created entry to be propagated to the other node.
@@ -148,6 +175,7 @@ test('Admin can assign admin that assigns a role', async () => {
 			editors[0].toString(),
 			new Uint8Array(carol.player.agentPubKey).toString(),
 		);
+		await createExampleEntryThatOnlyEditorsCanCreate(carol.store);
 		let roleClaims =
 			await carol.store.client.queryUndeletedRoleClaimsForRole('editor');
 		assert.equal(roleClaims.length, 1);
@@ -182,5 +210,8 @@ test('Admin can assign admin that assigns a role', async () => {
 		roleClaims =
 			await bob.store.client.queryUndeletedRoleClaimsForRole('editor');
 		assert.equal(roleClaims.length, 0);
+		await expect(() =>
+			createExampleEntryThatOnlyEditorsCanCreate(carol.store),
+		).rejects.toThrowError();
 	});
 });

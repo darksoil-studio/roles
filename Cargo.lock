@@ -1532,6 +1532,7 @@ name = "example_integrity"
 version = "0.0.1"
 dependencies = [
  "hdi",
+ "roles_types",
  "serde",
 ]
 
@@ -5446,6 +5447,15 @@ dependencies = [
 
 [[package]]
 name = "roles_integrity"
+version = "0.0.1"
+dependencies = [
+ "hdi",
+ "roles_types",
+ "serde",
+]
+
+[[package]]
+name = "roles_types"
 version = "0.0.1"
 dependencies = [
  "hdi",

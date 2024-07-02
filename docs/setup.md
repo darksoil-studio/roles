@@ -6,7 +6,7 @@
 1. Run this to scaffold this zome in your hApp:
 
 ```bash
-nix run github:holochain-open-dev/roles#scaffold
+nix run github:darksoil-studio/roles#scaffold
 ```
 
 This will do the following:
@@ -31,18 +31,18 @@ async function setupRolesStore() {
 }
 ```
 
-3. Import the `<roles-context>` element and add it to your html **wrapping the whole section of your page in which you are going to be placing** the other elements from `@holochain-open-dev/roles`:
+3. Import the `<roles-context>` element and add it to your html **wrapping the whole section of your page in which you are going to be placing** the other elements from `@darksoil-studio/roles`:
 
 ```js
 // This can be placed in the index.js, at the top level of your web-app.
-import "@holochain-open-dev/roles/elements/roles-context.js";
+import "@darksoil-studio/roles/elements/roles-context.js";
 ```
 
 And then add the `<roles-context>` element in your html:
 
 ```html
 <roles-context>
-  <!-- Add here other elements from @holochain-open-dev/roles -->
+  <!-- Add here other elements from @darksoil-studio/roles -->
 </roles-context>
 ```
 
@@ -90,7 +90,7 @@ contextElement.store = store;
 5. [Choose which elements you need](?path=/docs/frontend-elements) and import them like this:
 
 ```js
-import "@holochain-open-dev/roles/dist/elements/roles-context.js";
+import "@darksoil-studio/roles/dist/elements/roles-context.js";
 ```
 
 And then they are ready be used inside the `<roles-context>` just like any other HTML tag.
@@ -113,5 +113,5 @@ That's it! You have now integrated both the backend and the frontend for the pro
 
 # Example
 
-You can see a full working example of the UI working in [here](https://github.com/holochain-open-dev/roles/blob/main/ui/demo/index.html).
+You can see a full working example of the UI working in [here](https://github.com/darksoil-studio/roles/blob/main/ui/demo/index.html).
 

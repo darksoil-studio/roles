@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "@holochain-open-dev/roles"
+  name: "@darksoil-studio/roles"
   text: "Roles zome for holochain apps"
   tagline: Plug-and-play roles management for your hApps
   actions:

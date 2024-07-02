@@ -3,7 +3,7 @@
 The `RolesStore` is a typescript class that contains [async signals](https://www.npmjs.com/package/async-signals), which you can watch to get reactive updates in your elements.
 
 ```js
-import { RolesStore, RolesClient } from "@holochain-open-dev/roles";
+import { RolesStore, RolesClient } from "@darksoil-studio/roles";
 const store = new RolesStore(new RolesClient(appClient, 'my-role-name'));
 ```
 

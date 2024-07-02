@@ -7,7 +7,7 @@
 1. Import the `<role-claim-detail>` element somewhere in the javascript side of your web-app like this:
 
 ```js
-import '@holochain-open-dev/roles/dist/elements/role-claim-detail.js'
+import '@darksoil-studio/roles/dist/elements/role-claim-detail.js'
 ```
 
 2. Use it in the html side of your web-app like this:

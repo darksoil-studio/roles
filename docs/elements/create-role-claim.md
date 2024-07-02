@@ -7,7 +7,7 @@
 1. Import the `<create-role-claim>` element somewhere in the javascript side of your web-app like this:
 
 ```js
-import '@holochain-open-dev/roles/dist/elements/create-role-claim.js'
+import '@darksoil-studio/roles/dist/elements/create-role-claim.js'
 ```
 
 2. Use it in the html side of your web-app like this:

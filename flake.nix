@@ -43,6 +43,8 @@
           pkgs.writeShellApplication {
             name = "run-network";
 
+            derivationArgs = { allowSubstitutes = false; };
+
             runtimeInputs = [
               happ
               holochain.packages.holochain
@@ -99,7 +101,7 @@
               --add-flags "roles \
                 --integrity-zome-name roles_integrity \
                 --coordinator-zome-name roles \
-                --remote-zome-git-url github:holochain-open-dev/roles \
+                --remote-zome-git-url github:darksoil-studio/roles \
                 --remote-npm-package-name roles \
                 --remote-npm-package-path ui" \
                 --remote-zome-git-branch main \ 

@@ -46,7 +46,9 @@
             runtimeInputs = [
               happ
               holochain.packages.holochain
+              holochain.packages.lair-keystore
               holochain.packages.hc-launch
+              pkgs.yq
             ];
 
             text = ''

@@ -1,4 +1,10 @@
 use hdi::prelude::*;
+use holo_hash::AgentPubKeyB64;
+
+#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
+pub struct Properties {
+    pub progenitors: Vec<AgentPubKeyB64>,
+}
 
 #[derive(Clone, PartialEq)]
 #[hdk_entry_helper]

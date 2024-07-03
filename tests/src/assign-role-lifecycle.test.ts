@@ -1,7 +1,6 @@
 import { toPromise } from '@holochain-open-dev/signals';
-import { EntryRecord, HashType, retype } from '@holochain-open-dev/utils';
-import { cleanNodeDecoding } from '@holochain-open-dev/utils/dist/clean-node-decoding.js';
-import { dhtSync, pause, runScenario } from '@holochain/tryorama';
+import { HashType, retype } from '@holochain-open-dev/utils';
+import { dhtSync, runScenario } from '@holochain/tryorama';
 import { assert, expect, test } from 'vitest';
 
 import { RolesStore } from '../../ui/src/roles-store.js';
@@ -22,7 +21,7 @@ test('Assign role lifecycle', async () => {
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
-		let roles = await toPromise(alice.store.allRoles);
+		let roles = await toPromise(alice.store.allRolesWithAssignees);
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
 
@@ -42,17 +41,17 @@ test('Assign role lifecycle', async () => {
 
 		// Bob can't assign a role to itself
 		await expect(() =>
-			bob.store.client.assignRole('editor', bob.player.agentPubKey),
+			bob.store.client.assignRole('editor', [bob.player.agentPubKey]),
 		).rejects.toThrowError();
 		await expect(() =>
 			createExampleEntryThatOnlyEditorsCanCreate(bob.store),
 		).rejects.toThrowError();
-		await alice.store.client.assignRole('editor', bob.player.agentPubKey);
+		await alice.store.client.assignRole('editor', [bob.player.agentPubKey]);
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync([alice.player, bob.player], alice.player.cells[0].cell_id[0]);
 
-		roles = await toPromise(bob.store.allRoles);
+		roles = await toPromise(bob.store.allRolesWithAssignees);
 		assert.equal(roles.length, 2);
 		assert.ok(roles.includes('admin'));
 		assert.ok(roles.includes('editor'));
@@ -119,7 +118,7 @@ test('Admin can assign admin that assigns a role', async () => {
 	await runScenario(async scenario => {
 		const { alice, bob, carol } = await setup(scenario);
 
-		let roles = await toPromise(alice.store.allRoles);
+		let roles = await toPromise(alice.store.allRolesWithAssignees);
 		assert.equal(roles.length, 1);
 		assert.equal(roles[0], 'admin');
 
@@ -138,9 +137,9 @@ test('Admin can assign admin that assigns a role', async () => {
 
 		// Bob can't assign a role to itself
 		await expect(() =>
-			bob.store.client.assignRole('editor', bob.player.agentPubKey),
+			bob.store.client.assignRole('editor', [bob.player.agentPubKey]),
 		).rejects.toThrowError();
-		await alice.store.client.assignRole('admin', bob.player.agentPubKey);
+		await alice.store.client.assignRole('admin', [bob.player.agentPubKey]);
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync(
@@ -158,7 +157,7 @@ test('Admin can assign admin that assigns a role', async () => {
 			createExampleEntryThatOnlyEditorsCanCreate(carol.store),
 		).rejects.toThrowError();
 
-		await bob.store.client.assignRole('editor', carol.player.agentPubKey);
+		await bob.store.client.assignRole('editor', [carol.player.agentPubKey]);
 
 		// Wait for the created entry to be propagated to the other node.
 		await dhtSync(

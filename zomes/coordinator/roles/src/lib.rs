@@ -1,4 +1,4 @@
-use assignees::{assign_role, AssignRoleInput};
+use assignees::assign_role_to_single_agent;
 use hdk::prelude::*;
 use role_claim::create_role_claim;
 use roles_integrity::*;
@@ -14,10 +14,8 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let progenitors = progenitors(())?;
 
     if progenitors.contains(&agent_info.agent_initial_pubkey) {
-        let create_link_action_hash = assign_role(AssignRoleInput {
-            assignee: agent_info.agent_initial_pubkey,
-            role: ADMIN_ROLE.to_string(),
-        })?;
+        let create_link_action_hash =
+            assign_role_to_single_agent(ADMIN_ROLE.to_string(), agent_info.agent_initial_pubkey)?;
         create_role_claim(RoleClaim {
             role: ADMIN_ROLE.to_string(),
             assign_role_create_link_hash: create_link_action_hash,

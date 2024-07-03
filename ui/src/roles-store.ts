@@ -17,12 +17,13 @@ import { RolesClient } from './roles-client.js';
 import { queryLiveEntriesSignal } from './signal.js';
 
 export interface RoleConfig {
+	role: string;
 	name: string;
 	description: string;
 }
 
 export interface RolesStoreConfig {
-	roles_config: Record<string, RoleConfig>;
+	roles_config: Array<RoleConfig>;
 }
 
 export class RolesStore {
@@ -42,7 +43,11 @@ export class RolesStore {
 
 	/** All Roles */
 
-	allRoles = pipe(
+	get allRoles(): string[] {
+		return ['admin', ...this.config.roles_config.map(r => r.name)];
+	}
+
+	allRolesWithAssignees = pipe(
 		collectionSignal(this.client, () => this.client.getAllRoles(), 'AllRoles'),
 		allRoles => allRoles.map(l => decodeComponent(l.tag)),
 	);

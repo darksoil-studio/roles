@@ -1,0 +1,17 @@
+{
+	"productName": "hc-progenitor",
+	"version": "0.0.1",
+	"identifier": "studio.darksoil.hc-progenitor",
+	"app": {
+		"withGlobalTauri": false,
+		"security": {
+			"csp": null
+		},
+		"windows": []
+	},
+	"bundle": {
+		"active": false,
+		"targets": [],
+		"icon": ["icons/32x32.png"]
+	}
+}

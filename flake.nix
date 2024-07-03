@@ -11,9 +11,11 @@
     flake-parts.follows = "holochain/flake-parts";
 
     hc-infra.url = "github:holochain-open-dev/infrastructure";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/hc-embark";
     scaffolding.url = "github:holochain-open-dev/templates";
 
     profiles.url = "github:holochain-open-dev/profiles/nixify";
+    crane.follows = "hc-infra/crane";
   };
 
   nixConfig = {
@@ -35,11 +37,12 @@
         # Just for testing purposes
         ./workdir/dna.nix
         ./workdir/happ.nix
+        ./crates/hc-progenitor
       ];
 
       flake = {
         lib.network-with-progenitor =
-          { pkgs, happ, roles_to_modify, ui_port, holochain }:
+          { pkgs, happ, roles_to_modify, ui_port, holochain, hc-progenitor }:
           pkgs.writeShellApplication {
             name = "run-network";
 
@@ -47,6 +50,7 @@
 
             runtimeInputs = [
               happ
+              hc-progenitor
               holochain.packages.holochain
               holochain.packages.lair-keystore
               holochain.packages.hc-launch
@@ -62,19 +66,12 @@
       };
 
       systems = builtins.attrNames inputs.holochain.devShells;
-      perSystem = { inputs', self', config, pkgs, system, ... }: rec {
-        packages.launch-progenitor = pkgs.writeShellApplication {
-          name = "launch-progenitor";
-          runtimeInputs = [ inputs'.holochain.packages.hc-launch ];
-
-          text = ''
-            echo "hi"
-          '';
-        };
+      perSystem = { inputs', self', config, pkgs, system, ... }: {
 
         packages.network = flake.lib.network-with-progenitor {
           inherit pkgs;
           holochain = inputs'.holochain;
+          hc-progenitor = self'.packages.hc-progenitor;
           happ = self'.packages.roles_test_happ;
           roles_to_modify = "roles_test";
           ui_port = 8888;
@@ -83,13 +80,10 @@
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             inputs'.hc-infra.devShells.synchronized-pnpm
-            inputs'.holochain.devShells.holonix
+            inputs'.p2p-shipyard.devShells.holochainTauriDev
           ];
 
-          packages = [
-            inputs'.scaffolding.packages.hc-scaffold-zome-template
-            packages.launch-progenitor
-          ];
+          packages = [ inputs'.scaffolding.packages.hc-scaffold-zome-template ];
         };
 
         packages.scaffold = pkgs.symlinkJoin {

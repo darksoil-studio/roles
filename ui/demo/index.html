@@ -75,12 +75,13 @@
 					this._rolesStore = new RolesStore(
 						new RolesClient(appClient, 'roles_test'),
 						{
-							roles_config: {
-								editor: {
-									name: 'Editor',
+							roles_config: [
+								{
+									role: 'editor',
+									name: 'Editors',
 									description: 'Can create special entries',
 								},
-							},
+							],
 						},
 					);
 				}

@@ -72,10 +72,10 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 		return this.callZome('get_assignees_for_role', role);
 	}
 
-	async assignRole(role: string, assignee: AgentPubKey): Promise<void> {
+	async assignRole(role: string, assignees: AgentPubKey[]): Promise<void> {
 		return this.callZome('assign_role', {
 			role,
-			assignee,
+			assignees,
 		});
 	}
 

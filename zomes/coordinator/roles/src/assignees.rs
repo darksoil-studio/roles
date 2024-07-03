@@ -6,22 +6,44 @@ use crate::role_claim::query_undeleted_role_claims_for_role;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AssignRoleInput {
     pub role: String,
+    pub assignees: Vec<AgentPubKey>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RequestUnassignRoleInput {
+    pub role: String,
     pub assignee: AgentPubKey,
 }
 
-pub type RequestUnassignRoleInput = AssignRoleInput;
+// Just to be able to call this from init
+pub fn assign_role_to_single_agent(
+    role: String,
+    assignee: AgentPubKey,
+) -> ExternResult<ActionHash> {
+    let path = role_path(&role)?;
+    path.ensure()?;
+    create_link(
+        path.path_entry_hash()?,
+        assignee,
+        LinkTypes::RoleToAssignee,
+        role,
+    )
+}
 
 #[hdk_extern]
-pub fn assign_role(input: AssignRoleInput) -> ExternResult<ActionHash> {
+pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     let path = role_path(&input.role)?;
     path.ensure()?;
 
-    create_link(
-        path.path_entry_hash()?,
-        input.assignee,
-        LinkTypes::RoleToAssignee,
-        input.role,
-    )
+    for assignee in input.assignees {
+        create_link(
+            path.path_entry_hash()?,
+            assignee,
+            LinkTypes::RoleToAssignee,
+            input.role.clone(),
+        )?;
+    }
+    Ok(())
 }
 
 fn pending_unassignments_path() -> Path {

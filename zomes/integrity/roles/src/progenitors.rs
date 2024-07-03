@@ -1,10 +1,5 @@
 use hdi::prelude::*;
-use holo_hash::AgentPubKeyB64;
-
-#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
-pub struct Properties {
-    progenitors: Vec<AgentPubKeyB64>,
-}
+use roles_types::*;
 
 #[hdk_extern]
 pub fn progenitors() -> ExternResult<Vec<AgentPubKey>> {

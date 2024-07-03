@@ -34,10 +34,10 @@ SIGNAL_PORT=$(random_unused_port)
 
 hc-run-local-services --bootstrap-port "$BOOTSTRAP_PORT" --signal-port "$SIGNAL_PORT" &
 
-function create_progenitor {
+function run_progenitor {
   set -e
-  echo "pass" | hc-sandbox --piped create --root "$WORKDIR" -d progenitor network --bootstrap "http://127.0.0.1:$BOOTSTRAP_PORT" webrtc "ws://127.0.0.1:$SIGNAL_PORT" >/dev/null
-  AGENT=$(echo "pass" | hc-sandbox --piped call new-agent | awk -F"[ ]+" '/Added agent/{print $4}')
+  hc-progenitor --workdir "$WORKDIR" run --progenitor-dna-role "$ROLE_TO_EDIT" --ui-port "$UI_PORT" --bootstrap-url "http://127.0.0.1:$BOOTSTRAP_PORT" --signal-url "ws://127.0.0.1:$SIGNAL_PORT" "$HAPP_PATH"
+  AGENT=$(hc-progenitor --workdir "$WORKDIR" print-progenitor)
 
   echo "$AGENT"
 }
@@ -54,21 +54,17 @@ function override_progenitor_in_happ {
   hc-app pack "$WORKDIR/happ" -o "$WORKDIR/happ.happ" >/dev/null
 }
 
-function run_progenitor {
-  set -e
-  echo "pass" | hc-sandbox --piped run &
-  echo "pass" | hc-launch --piped --reuse-conductors "$WORKDIR/happ.happ" --ui-port "$UI_PORT"
-}
-
-PROGENITOR=$(create_progenitor)
+PROGENITOR=$(run_progenitor)
 
 echo "Created progenitor: $PROGENITOR"
 
 override_progenitor_in_happ "$PROGENITOR"
-run_progenitor &
 
 # Run all other agents
 mkdir "$WORKDIR/others"
 cd "$WORKDIR/others"
-echo "pass" | hc-launch -n $((NUM_AGENTS-1)) --piped "$WORKDIR/happ.happ" --ui-port "$UI_PORT" network --bootstrap "http://127.0.0.1:$BOOTSTRAP_PORT" webrtc "ws://127.0.0.1:$SIGNAL_PORT"
+
+for i in $(seq 1 $((NUM_AGENTS-1)) ); do
+  hc-embark --password pass "$WORKDIR/happ.happ" --ui-port "$UI_PORT" --bootstrap-url "http://127.0.0.1:$BOOTSTRAP_PORT" --signal-url "ws://127.0.0.1:$SIGNAL_PORT"
+done
 

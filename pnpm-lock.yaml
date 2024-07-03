@@ -26,9 +26,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@8.57.0)
-      new-port-cli:
-        specifier: ^1.0.0
-        version: 1.0.0
       prettier:
         specifier: ^3.2.5
         version: 3.3.2
@@ -47,12 +44,12 @@ importers:
       '@api-viewer/docs':
         specifier: 1.0.0-pre.10
         version: 1.0.0-pre.10
+      '@darksoil-studio/roles':
+        specifier: workspace:*
+        version: link:../ui
       '@holochain-open-dev/profiles':
         specifier: github:holochain-open-dev/profiles#nixify&path:ui
         version: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/d7ea5ffc05312b00acd6c9446cba81d7e7852752#path:ui(@types/react@18.3.3)
-      '@holochain-open-dev/roles':
-        specifier: workspace:*
-        version: link:../ui
       '@holochain/client':
         specifier: ^0.17.0
         version: 0.17.0
@@ -89,9 +86,6 @@ importers:
       '@msgpack/msgpack':
         specifier: ^2.8.0
         version: 2.8.0
-      fflate:
-        specifier: ^0.8.2
-        version: 0.8.2
       typescript:
         specifier: ^5.4.5
         version: 5.5.2
@@ -105,8 +99,8 @@ importers:
         specifier: ^0.300.0
         version: 0.300.0(@types/react@18.3.3)
       '@holochain-open-dev/profiles':
-        specifier: github:holochain-open-dev/profiles#d7ea5ffc05312b00acd6c9446cba81d7e7852752&path:ui
-        version: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/d7ea5ffc05312b00acd6c9446cba81d7e7852752#path:ui(@types/react@18.3.3)
+        specifier: github:holochain-open-dev/profiles#748bb4879e247eff44a4a23a8d2aaa02a585578a&path:ui
+        version: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/748bb4879e247eff44a4a23a8d2aaa02a585578a#path:ui(@types/react@18.3.3)
       '@holochain-open-dev/signals':
         specifier: ^0.300.0
         version: 0.300.0(@types/react@18.3.3)
@@ -650,6 +644,10 @@ packages:
 
   '@holochain-open-dev/elements@0.300.0':
     resolution: {integrity: sha512-ooctMs2f/tPqrjdNLaRFYM8HhoBSmB41sXz6peAAI3k40/ZNIgTRPd73+Ww/fjNKsMifDloiBF4hm4ZdmaU1rA==}
+
+  '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/748bb4879e247eff44a4a23a8d2aaa02a585578a#path:ui':
+    resolution: {path: ui, tarball: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/748bb4879e247eff44a4a23a8d2aaa02a585578a}
+    version: 0.300.0
 
   '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/d7ea5ffc05312b00acd6c9446cba81d7e7852752#path:ui':
     resolution: {path: ui, tarball: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/d7ea5ffc05312b00acd6c9446cba81d7e7852752}
@@ -1632,9 +1630,6 @@ packages:
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
 
-  fflate@0.8.2:
-    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
-
   file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -2081,13 +2076,6 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  new-port-cli@1.0.0:
-    resolution: {integrity: sha512-9uMPTw2loJJ5423n4GT2uW7y12IeqiLiuUsNaXHZb3pBWNQ/pCnSi8nJ/EHBEBO58FQszvH2YCMDoCh7pnXN4Q==}
-    hasBin: true
-
-  new-port@1.0.0:
-    resolution: {integrity: sha512-2rEL1cZj78LekYSfYHDGP7lIhrCauYbPy92QvEyfJcNzrXIuDjEMWlpxrgGic2BNM7S+viHn8ajuYx0b9UlJJQ==}
 
   non-layered-tidy-tree-layout@2.0.2:
     resolution: {integrity: sha512-gkXMxRzUH+PB0ax9dUN0yYF0S25BqeAYqhgMaLUFmpXLEk7Fcu8f4emJuOAY0V8kjDICxROIKsTAKsV/v355xw==}
@@ -3188,6 +3176,23 @@ snapshots:
       prosemirror-keymap: 1.2.2
       prosemirror-state: 1.4.3
       prosemirror-view: 1.33.8
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/748bb4879e247eff44a4a23a8d2aaa02a585578a#path:ui(@types/react@18.3.3)':
+    dependencies:
+      '@holochain-open-dev/elements': 0.300.0(@types/react@18.3.3)
+      '@holochain-open-dev/signals': 0.300.0(@types/react@18.3.3)
+      '@holochain-open-dev/utils': 0.300.1
+      '@holochain/client': 0.17.0
+      '@lit/context': 1.1.2
+      '@lit/localize': 0.12.1
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.15.1(@types/react@18.3.3)
+      lit: 3.1.4
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
@@ -4376,8 +4381,6 @@ snapshots:
 
   fecha@4.2.3: {}
 
-  fflate@0.8.2: {}
-
   file-entry-cache@6.0.1:
     dependencies:
       flat-cache: 3.2.0
@@ -4898,12 +4901,6 @@ snapshots:
   nanoid@3.3.7: {}
 
   natural-compare@1.4.0: {}
-
-  new-port-cli@1.0.0:
-    dependencies:
-      new-port: 1.0.0
-
-  new-port@1.0.0: {}
 
   non-layered-tidy-tree-layout@2.0.2: {}
 

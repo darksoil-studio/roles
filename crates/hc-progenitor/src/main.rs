@@ -1,10 +1,11 @@
-use std::path::PathBuf;
+use std::{net::Ipv4Addr, path::PathBuf};
 
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 
 mod run;
 use holochain_client::AdminWebsocket;
+use holochain_types::dna::AgentPubKeyB64;
 use run::*;
 
 mod config;
@@ -38,8 +39,7 @@ fn main() -> anyhow::Result<()> {
             let result: anyhow::Result<()> = runtime.block_on(async move {
                 let config = get_config(&args.workdir)?;
                 let admin_ws =
-                    AdminWebsocket::connect(format!("http://127.0.0.1:{}", config.admin_port))
-                        .await?;
+                    AdminWebsocket::connect((Ipv4Addr::LOCALHOST, config.admin_port)).await?;
 
                 let apps = admin_ws
                     .list_apps(None)
@@ -54,7 +54,10 @@ fn main() -> anyhow::Result<()> {
                         config.progenitor_app_id
                     ))?;
 
-                println!("{:?}", progenitor_app.agent_pub_key);
+                println!(
+                    "{:?}",
+                    AgentPubKeyB64::from(progenitor_app.agent_pub_key).to_string()
+                );
                 Ok(())
             });
             result?;

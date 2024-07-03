@@ -177,7 +177,7 @@ async fn override_properties_in_happ(
 
     let inner = inner.update_manifest(manifest)?;
 
-    let happ_path = workdir.join("happ.happ");
+    let happ_path = workdir.join("progenitor.happ");
     inner.write_to_file(&happ_path).await?;
 
     Ok(happ_path)

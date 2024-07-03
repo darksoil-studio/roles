@@ -42,7 +42,7 @@
 
       flake = {
         lib.network-with-progenitor =
-          { pkgs, happ, roles_to_modify, ui_port, holochain, hc-progenitor }:
+          { pkgs, happ, roles_to_modify, ui_port, p2p-shipyard, hc-progenitor }:
           pkgs.writeShellApplication {
             name = "run-network";
 
@@ -51,10 +51,8 @@
             runtimeInputs = [
               happ
               hc-progenitor
-              holochain.packages.holochain
-              holochain.packages.lair-keystore
-              holochain.packages.hc-launch
-              pkgs.yq
+              p2p-shipyard.packages.hc-embark
+              pkgs.pstree
             ];
 
             text = ''
@@ -70,7 +68,7 @@
 
         packages.network = flake.lib.network-with-progenitor {
           inherit pkgs;
-          holochain = inputs'.holochain;
+          p2p-shipyard = inputs'.p2p-shipyard;
           hc-progenitor = self'.packages.hc-progenitor;
           happ = self'.packages.roles_test_happ;
           roles_to_modify = "roles_test";

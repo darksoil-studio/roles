@@ -5,14 +5,27 @@ import {
 	wrapPathInSvg,
 } from '@holochain-open-dev/elements';
 import '@holochain-open-dev/elements/dist/elements/display-error.js';
+import {
+	ProfilesStore,
+	profilesStoreContext,
+} from '@holochain-open-dev/profiles';
+import '@holochain-open-dev/profiles/dist/elements/profile-list-item.js';
 import { SearchAgents } from '@holochain-open-dev/profiles/dist/elements/search-agents.js';
+import '@holochain-open-dev/profiles/dist/elements/search-agents.js';
 import { AsyncResult, SignalWatcher } from '@holochain-open-dev/signals';
-import { ActionHash, AgentPubKey, EntryHash, Record } from '@holochain/client';
+import {
+	ActionHash,
+	AgentPubKey,
+	EntryHash,
+	Record,
+	encodeHashToBase64,
+} from '@holochain/client';
 import { consume } from '@lit/context';
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { mdiDelete, mdiInformationOutline } from '@mdi/js';
 import { SlDialog } from '@shoelace-style/shoelace';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -21,7 +34,8 @@ import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { rolesStoreContext } from '../context.js';
-import { RoleConfig, RolesStore } from '../roles-store.js';
+import { RoleConfig, adminRoleConfig } from '../role-config.js';
+import { RolesStore } from '../roles-store.js';
 import { joinAsyncMap, mapValues, slice } from '../signal.js';
 
 /**
@@ -33,11 +47,20 @@ export class AllRoles extends SignalWatcher(LitElement) {
 	/**
 	 * @internal
 	 */
+	@consume({ context: profilesStoreContext, subscribe: true })
+	profilesStore!: ProfilesStore;
+
+	/**
+	 * @internal
+	 */
 	@consume({ context: rolesStoreContext, subscribe: true })
 	rolesStore!: RolesStore;
 
 	@state()
 	committing = false;
+
+	@state()
+	removingRole = false;
 
 	async addMembersToRole(role: string, assignees: AgentPubKey[]) {
 		try {
@@ -65,9 +88,137 @@ export class AllRoles extends SignalWatcher(LitElement) {
 		this.committing = false;
 	}
 
-	renderRole(roleConfig: RoleConfig, assignees: AgentPubKey[]) {
-		return html` <sl-dialog id="add-members-${roleConfig.role}">
-				<search-agents id="search-agents-${roleConfig.role}"></search-agents>
+	async removeRole(role: string, assignee: AgentPubKey) {
+		try {
+			this.removingRole = true;
+			await this.rolesStore.client.requestUnassignRole(role, assignee);
+
+			this.dispatchEvent(
+				new CustomEvent('unassig-role-requested', {
+					composed: true,
+					bubbles: true,
+					detail: {
+						role,
+						assignee,
+					},
+				}),
+			);
+
+			(
+				this.shadowRoot!.getElementById(
+					`remove-role-${role}-for-${encodeHashToBase64(assignee)}`,
+				) as SlDialog
+			).hide();
+		} catch (e: unknown) {
+			console.error(e);
+			notifyError(msg('Error removing the role'));
+		}
+		this.removingRole = false;
+	}
+
+	name(agent: AgentPubKey): string | undefined {
+		const profile = this.profilesStore.profiles.get(agent).get();
+		if (profile.status !== 'completed') return undefined;
+		return profile.value?.entry.nickname;
+	}
+
+	renderRemoveRoleAction(
+		roleConfig: RoleConfig,
+		assignee: AgentPubKey,
+		assigneesCount: number,
+	) {
+		const pendingUnassignments = this.rolesStore.pendingUnassigments.get();
+		switch (pendingUnassignments.status) {
+			case 'pending':
+				return html`<sl-skeleton></sl-skeleton>`;
+			case 'error':
+				return html`<display-error
+					.headline=${msg('Error fetching the pending unassignments')}
+					tooltip
+					.error=${pendingUnassignments.error}
+				></display-error>`;
+			case 'completed':
+				const pendingUnassignment = !!pendingUnassignments.value.find(
+					link =>
+						link.target.toString() === assignee.toString() &&
+						new TextDecoder().decode(link.tag) === roleConfig.role,
+				);
+				if (pendingUnassignment) {
+					return html`<sl-tag>${msg('Remove Role Requested')}</sl-tag>`;
+				}
+
+				return html`
+					<sl-dialog
+						.label=${msg(`Remove role`)}
+						id="remove-role-${roleConfig.role}-for-${encodeHashToBase64(
+							assignee,
+						)}"
+					>
+						<div class="column" style="gap: 12px">
+							<span
+								>${msg(
+									str`Are you sure you want to request ${this.name(assignee)} to remove its ${roleConfig.singular_name} role?`,
+								)}</span
+							>
+							<span
+								>${msg(
+									'Their role will actually be removed the next time this member is online again.',
+								)}</span
+							>
+						</div>
+						<sl-button
+							slot="footer"
+							@click=${() =>
+								(
+									this.shadowRoot!.getElementById(
+										`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assignee)}`,
+									) as SlDialog
+								).hide()}
+							>${msg('Cancel')}</sl-button
+						>
+						<sl-button
+							slot="footer"
+							variant="primary"
+							.loading=${this.committing}
+							@click=${() => {
+								this.removeRole(roleConfig.role, assignee);
+							}}
+							>${msg('Remove Role')}</sl-button
+						>
+					</sl-dialog>
+
+					<sl-icon-button
+						.src=${wrapPathInSvg(mdiDelete)}
+						.disabled=${roleConfig.role === adminRoleConfig.role &&
+						assigneesCount < 2}
+						@click=${() => {
+							(
+								this.shadowRoot?.getElementById(
+									`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assignee)}`,
+								) as SlDialog
+							).show();
+						}}
+					></sl-icon-button>
+				`;
+		}
+	}
+
+	renderRole(
+		roleConfig: RoleConfig,
+		assignees: AgentPubKey[],
+		iAmAdmin: boolean,
+	) {
+		return html` <sl-dialog
+				id="add-members-${roleConfig.role}"
+				.label=${msg(str`Add members as ${roleConfig.plural_name}`)}
+			>
+				<search-agents
+					.excludedAgents=${assignees}
+					id="search-agents-${roleConfig.role}"
+					.fieldLabel=${msg('Search Member')}
+					.emptyListPlaceholder=${msg('No members selected yet.')}
+					@agents-changed=${() => this.requestUpdate()}
+				></search-agents>
 				<sl-button
 					slot="footer"
 					@click=${() =>
@@ -81,6 +232,13 @@ export class AllRoles extends SignalWatcher(LitElement) {
 				<sl-button
 					slot="footer"
 					variant="primary"
+					.disabled=${!(
+						(
+							this.shadowRoot?.getElementById(
+								`search-agents-${roleConfig.role}`,
+							) as SearchAgents
+						)?.value.length > 0
+					)}
 					.loading=${this.committing}
 					@click=${() => {
 						let agents = (
@@ -95,21 +253,25 @@ export class AllRoles extends SignalWatcher(LitElement) {
 			</sl-dialog>
 			<div class="column">
 				<div class="row" style="align-items: center">
-					<span class="title" style="flex: 1">${roleConfig.name}</span>
-					<sl-button
-						@click=${() =>
-							(
-								this.shadowRoot!.getElementById(
-									`add-members-${roleConfig.role}`,
-								) as SlDialog
-							).show()}
-						>${msg('Add Members')}</sl-button
-					>
+					<span class="title" style="flex: 1">${roleConfig.plural_name}</span>
+					${iAmAdmin
+						? html`
+								<sl-button
+									@click=${() =>
+										(
+											this.shadowRoot!.getElementById(
+												`add-members-${roleConfig.role}`,
+											) as SlDialog
+										).show()}
+									>${msg('Add Members')}</sl-button
+								>
+							`
+						: html``}
 				</div>
 				<sl-divider></sl-divider>
 				<span class="placeholder">${roleConfig.description}</span>
 
-				<div class="column" style="gap: 8px; margin-top: 8px">
+				<div class="column" style="gap: 12px; margin-top: 24px;">
 					${assignees.length === 0
 						? html`
 								<div
@@ -127,13 +289,16 @@ export class AllRoles extends SignalWatcher(LitElement) {
 							`
 						: assignees.map(
 								a => html`
-									<div class="row" style="align-items: center">
+									<div class="row" style="align-items: center;">
 										<profile-list-item .agentPubKey=${a}></profile-list-item>
 										<span style="flex: 1"></span>
-
-										<sl-icon-button
-											.src=${wrapPathInSvg(mdiDelete)}
-										></sl-icon-button>
+										${iAmAdmin
+											? this.renderRemoveRoleAction(
+													roleConfig,
+													a,
+													assignees.length,
+												)
+											: html``}
 									</div>
 								`,
 							)}
@@ -142,20 +307,16 @@ export class AllRoles extends SignalWatcher(LitElement) {
 	}
 
 	renderRoles(assignees: ReadonlyMap<string, AgentPubKey[]>) {
+		const iAmAdmin = !!assignees
+			.get('admin')
+			?.find(
+				a => a.toString() === this.rolesStore.client.client.myPubKey.toString(),
+			);
 		return html`
-			<div class="column" style="gap: 24px; flex: 1">
-				${this.renderRole(
-					{
-						role: 'admin',
-						name: msg('Administrators'),
-						description: msg(
-							'Administrators can add and remove assignees for any other role.',
-						),
-					},
-					assignees.get('admin')!,
-				)}
+			<div class="column" style="gap: 32px; flex: 1">
+				${this.renderRole(adminRoleConfig, assignees.get('admin')!, iAmAdmin)}
 				${this.rolesStore.config.roles_config.map(config =>
-					this.renderRole(config, assignees.get(config.name)!),
+					this.renderRole(config, assignees.get(config.role)!, iAmAdmin),
 				)}
 			</div>
 		`;

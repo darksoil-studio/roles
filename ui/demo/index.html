@@ -48,6 +48,7 @@
 
 			import '../src/elements/all-roles.ts';
 			import '../src/elements/roles-context.ts';
+			import '../src/elements/roles-for-agent.ts';
 			import { RolesClient, RolesStore } from '../src/index.ts';
 
 			export class DemoApp extends SignalWatcher(LitElement) {
@@ -78,7 +79,8 @@
 							roles_config: [
 								{
 									role: 'editor',
-									name: 'Editors',
+									singular_name: 'Editor',
+									plural_name: 'Editors',
 									description: 'Can create special entries',
 								},
 							],
@@ -89,7 +91,7 @@
 				renderContent() {
 					return html`
 						<roles-context .store=${this._rolesStore}>
-							<all-roles></all-roles>
+							<sl-card> <all-roles style="width: 300px"></all-roles></sl-card>
 
 							<sl-button
 								@click=${() =>
@@ -101,6 +103,9 @@
 									})}
 								>Create special entry</sl-button
 							>
+							<roles-for-agent
+								.agent=${this._rolesStore.client.client.myPubKey}
+							></roles-for-agent>
 						</roles-context>
 					`;
 				}

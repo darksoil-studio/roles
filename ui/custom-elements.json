@@ -736,7 +736,65 @@
           "kind": "class",
           "description": "",
           "name": "AllRoles",
+          "members": [],
+          "mixins": [
+            {
+              "name": "SignalWatcher",
+              "package": "@holochain-open-dev/signals"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "all-roles",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "AllRoles",
+          "declaration": {
+            "name": "AllRoles",
+            "module": "src/elements/all-roles.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "all-roles",
+          "declaration": {
+            "name": "AllRoles",
+            "module": "src/elements/all-roles.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/role-detail.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RoleDetail",
           "members": [
+            {
+              "kind": "field",
+              "name": "role",
+              "type": {
+                "text": "string"
+              },
+              "attribute": "role"
+            },
+            {
+              "kind": "field",
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              },
+              "attribute": "rolesStore"
+            },
             {
               "kind": "field",
               "name": "committing",
@@ -856,24 +914,7 @@
             },
             {
               "kind": "method",
-              "name": "renderRoles",
-              "parameters": [
-                {
-                  "name": "assignees",
-                  "type": {
-                    "text": "ReadonlyMap<string, AgentPubKey[]>"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "assigneesByRole",
-              "return": {
-                "type": {
-                  "text": "AsyncResult<ReadonlyMap<string, AgentPubKey[]>>"
-                }
-              }
+              "name": "assigneesForRoleAndIAmAdmin"
             }
           ],
           "events": [
@@ -890,6 +931,22 @@
               }
             }
           ],
+          "attributes": [
+            {
+              "name": "role",
+              "type": {
+                "text": "string"
+              },
+              "fieldName": "role"
+            },
+            {
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              },
+              "fieldName": "rolesStore"
+            }
+          ],
           "mixins": [
             {
               "name": "SignalWatcher",
@@ -900,25 +957,25 @@
             "name": "LitElement",
             "package": "lit"
           },
-          "tagName": "all-roles",
+          "tagName": "role-detail",
           "customElement": true
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "AllRoles",
+          "name": "RoleDetail",
           "declaration": {
-            "name": "AllRoles",
-            "module": "src/elements/all-roles.ts"
+            "name": "RoleDetail",
+            "module": "src/elements/role-detail.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "all-roles",
+          "name": "role-detail",
           "declaration": {
-            "name": "AllRoles",
-            "module": "src/elements/all-roles.ts"
+            "name": "RoleDetail",
+            "module": "src/elements/role-detail.ts"
           }
         }
       ]

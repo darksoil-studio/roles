@@ -1,4 +1,4 @@
-{
+rec {
   description = "Template for Holochain app development";
 
   inputs = {
@@ -41,8 +41,8 @@
       ];
 
       flake = {
-        lib.network-with-progenitor =
-          { pkgs, happ, roles_to_modify, ui_port, p2p-shipyard, hc-progenitor }:
+        lib.progenitor-network = { pkgs, system }:
+          { happ, roles_to_modify, ui_port }:
           pkgs.writeShellApplication {
             name = "run-network";
 
@@ -50,9 +50,8 @@
 
             runtimeInputs = [
               happ
-              hc-progenitor
-              p2p-shipyard.packages.hc-embark
-              pkgs.pstree
+              (outputs inputs).packages.${system}.hc-progenitor
+              inputs.p2p-shipyard.outputs.packages.${system}.hc-embark
             ];
 
             text = ''
@@ -66,10 +65,7 @@
       systems = builtins.attrNames inputs.holochain.devShells;
       perSystem = { inputs', self', config, pkgs, system, ... }: {
 
-        packages.network = flake.lib.network-with-progenitor {
-          inherit pkgs;
-          p2p-shipyard = inputs'.p2p-shipyard;
-          hc-progenitor = self'.packages.hc-progenitor;
+        packages.network = (pkgs.callPackage flake.lib.progenitor-network { }) {
           happ = self'.packages.roles_test_happ;
           roles_to_modify = "roles_test";
           ui_port = 8888;

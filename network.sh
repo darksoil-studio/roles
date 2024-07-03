@@ -1,6 +1,7 @@
-# Assumes pstree, hc-progenitor, hc-embark is in the path
+# Assumes hc-progenitor and hc-embark are in the path
 set -e
 
+# Kill all subprocesses on exit
 list_descendants ()
 {
   local children=$(ps -o pid= --ppid "$1")
@@ -12,16 +13,8 @@ list_descendants ()
 
   echo "$children"
 }
-
-
-# Kill all subprocesses on exit
 cleanup() {
   kill $(list_descendants $$) > /dev/null 2>&1
-  # local pids
-  # pids=$(jobs -pr)
-  # echo "$pids"
-  # pstree -p $$ | grep -Eow "[0-9]+" | xargs kill
-  # killall hc-embark hc-progenitor hc-run-local-services
 }
 trap "cleanup" INT QUIT TERM EXIT SIGINT SIGTERM
 

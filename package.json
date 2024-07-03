@@ -1,24 +1,24 @@
 {
-  "name": "roles-dev",
-  "private": true,
-  "scripts": {
-    "start": "UI_PORT=8888 concurrently -k \"nix run .#network\" \"pnpm -F @darksoil-studio/roles start\"",
-    "test": "pnpm build:happ && pnpm -F tests test",
-    "build:happ": "nix build -L .#roles_test_happ -o workdir/roles_test.happ"
-  },
-  "devDependencies": {
-    "@holochain-playground/cli": "^0.300.0-rc",
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@eslint/js": "^8.0.0",
-    "concurrently": "^6.2.1",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.2.5",
-    "typescript-eslint": "^7.7.0",
-    "typescript": "^5.4.5"
-  },
-  "type": "module",
-  "engines": {
-    "pnpm": ">=9.0.0"
-  }
+	"name": "roles-dev",
+	"private": true,
+	"scripts": {
+		"start": "UI_PORT=8888 concurrently -k \"nix run -L .#network\" \"pnpm -F @darksoil-studio/roles start\"",
+		"test": "pnpm build:happ && pnpm -F tests test",
+		"build:happ": "nix build -L .#roles_test_happ -o workdir/roles_test.happ"
+	},
+	"devDependencies": {
+		"@holochain-playground/cli": "^0.300.0-rc",
+		"@trivago/prettier-plugin-sort-imports": "^4.3.0",
+		"@eslint/js": "^8.0.0",
+		"concurrently": "^6.2.1",
+		"eslint": "^8.0.0",
+		"eslint-config-prettier": "^9.1.0",
+		"prettier": "^3.2.5",
+		"typescript-eslint": "^7.7.0",
+		"typescript": "^5.4.5"
+	},
+	"type": "module",
+	"engines": {
+		"pnpm": ">=9.0.0"
+	}
 }

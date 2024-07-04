@@ -11,11 +11,12 @@ rec {
     flake-parts.follows = "holochain/flake-parts";
 
     hc-infra.url = "github:holochain-open-dev/infrastructure";
+    crane.follows = "hc-infra/crane";
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/hc-embark";
     scaffolding.url = "github:holochain-open-dev/templates";
 
     profiles.url = "github:holochain-open-dev/profiles/nixify";
-    crane.follows = "hc-infra/crane";
+    notifications.url = "github:darksoil-studio/notifications";
   };
 
   nixConfig = {

@@ -25,6 +25,9 @@
         # Include here the zome packages for this DNA, e.g.:
         profiles_integrity = inputs'.profiles.packages.profiles_integrity;
         profiles = inputs'.profiles.packages.profiles;
+        notifications_integrity =
+          inputs'.notifications.packages.notifications_integrity;
+        notifications = inputs'.notifications.packages.notifications;
         # This overrides all the "bundled" properties for the DNA manifest
         roles_integrity = self'.packages.roles_integrity;
         roles = self'.packages.roles;

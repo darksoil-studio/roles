@@ -31,6 +31,12 @@
 		<demo-app></demo-app>
 
 		<script type="module">
+			import {
+				NotificationsClient,
+				NotificationsStore,
+				notificationsStoreContext,
+			} from '@darksoil-studio/notifications';
+			import '@darksoil-studio/notifications/dist/elements/my-notifications-icon-button.js';
 			import { sharedStyles } from '@holochain-open-dev/elements';
 			import '@holochain-open-dev/elements/dist/elements/display-error.js';
 			import {
@@ -73,6 +79,18 @@
 					);
 					new ContextProvider(this, profilesStoreContext, profilesStore);
 
+					const notificationsStore = new NotificationsStore(
+						new NotificationsClient(appClient, 'roles_test'),
+						{
+							types: {},
+						},
+					);
+					new ContextProvider(
+						this,
+						notificationsStoreContext,
+						notificationsStore,
+					);
+
 					this._rolesStore = new RolesStore(
 						new RolesClient(appClient, 'roles_test'),
 						{
@@ -85,6 +103,7 @@
 								},
 							],
 						},
+						notificationsStore,
 					);
 				}
 
@@ -106,6 +125,7 @@
 							<roles-for-agent
 								.agent=${this._rolesStore.client.client.myPubKey}
 							></roles-for-agent>
+							<my-notifications-icon-button></my-notifications-icon-button>
 						</roles-context>
 					`;
 				}

@@ -114,6 +114,14 @@
             "name": "*",
             "package": "./types.js"
           }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./role-config.js"
+          }
         }
       ]
     },
@@ -551,7 +559,7 @@
             {
               "kind": "field",
               "name": "assignees",
-              "default": "new LazyMap((role: string) =>\n\t\tpipe(\n\t\t\tthis.roleBasedAddress.get(role),\n\t\t\troleBaseAddress =>\n\t\t\t\tliveLinksSignal(\n\t\t\t\t\tthis.client,\n\t\t\t\t\troleBaseAddress,\n\t\t\t\t\t() => this.client.getAssigneesForRole(role),\n\t\t\t\t\t'RoleToAssignee',\n\t\t\t\t\t4000,\n\t\t\t\t),\n\t\t\t() =>\n\t\t\t\tjoinAsync([\n\t\t\t\t\tthis.pendingUnassigments.get(),\n\t\t\t\t\tthis.myRoleClaims.get(role).get(),\n\t\t\t\t]),\n\t\t\tasync ([pendingUnassignments, myRoleClaims], assigneesLinks) => {\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\t/** If I have been requested to unassign a role and I still have it, unassign it */\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole = pendingUnassignments.filter(\n\t\t\t\t\tpendingUnassigment =>\n\t\t\t\t\t\tretype(pendingUnassigment.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString() &&\n\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassigment.tag) === role,\n\t\t\t\t);\n\t\t\t\tif (myPendingUnassignmentsForThisRole.length > 0) {\n\t\t\t\t\tfor (const link of myPendingUnassignmentsForThisRole) {\n\t\t\t\t\t\tawait this.client.unassignMyRole(link.create_link_hash);\n\t\t\t\t\t}\n\n\t\t\t\t\tassignees = assignees.filter(\n\t\t\t\t\t\tassignee =>\n\t\t\t\t\t\t\tassignee.toString() !==\n\t\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString(),\n\t\t\t\t\t);\n\t\t\t\t}\n\n\t\t\t\t/** If I am assigned to the role but haven't claimed it, do so */\n\n\t\t\t\tconst myAssigneeLink = assigneesLinks.find(\n\t\t\t\t\ta =>\n\t\t\t\t\t\tretype(a.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString(),\n\t\t\t\t);\n\n\t\t\t\tif (\n\t\t\t\t\tmyPendingUnassignmentsForThisRole.length === 0 &&\n\t\t\t\t\tmyAssigneeLink &&\n\t\t\t\t\tmyRoleClaims.length === 0\n\t\t\t\t) {\n\t\t\t\t\tawait this.client.createRoleClaim({\n\t\t\t\t\t\trole,\n\t\t\t\t\t\tassign_role_create_link_hash: myAssigneeLink.create_link_hash,\n\t\t\t\t\t});\n\t\t\t\t}\n\n\t\t\t\treturn assignees;\n\t\t\t},\n\t\t),\n\t)"
+              "default": "new LazyMap((role: string) =>\n\t\tpipe(\n\t\t\tthis.roleBasedAddress.get(role),\n\t\t\troleBaseAddress =>\n\t\t\t\tliveLinksSignal(\n\t\t\t\t\tthis.client,\n\t\t\t\t\troleBaseAddress,\n\t\t\t\t\t() => this.client.getAssigneesForRole(role),\n\t\t\t\t\t'RoleToAssignee',\n\t\t\t\t\t4000,\n\t\t\t\t),\n\t\t\t() =>\n\t\t\t\tjoinAsync([\n\t\t\t\t\tthis.pendingUnassigments.get(),\n\t\t\t\t\tthis.myRoleClaims.get(role).get(),\n\t\t\t\t]),\n\t\t\tasync ([pendingUnassignments, myRoleClaims], assigneesLinks) => {\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole = pendingUnassignments.filter(\n\t\t\t\t\tpendingUnassigment =>\n\t\t\t\t\t\tretype(pendingUnassigment.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString() &&\n\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassigment.tag) === role,\n\t\t\t\t);\n\n\t\t\t\t/** If I am assigned to the role but haven't claimed it, do so */\n\n\t\t\t\tconst myAssigneeLink = assigneesLinks.find(\n\t\t\t\t\ta =>\n\t\t\t\t\t\tretype(a.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString(),\n\t\t\t\t);\n\n\t\t\t\tif (\n\t\t\t\t\tmyPendingUnassignmentsForThisRole.length === 0 &&\n\t\t\t\t\tmyAssigneeLink &&\n\t\t\t\t\tmyRoleClaims.length === 0\n\t\t\t\t) {\n\t\t\t\t\tawait this.client.createRoleClaim({\n\t\t\t\t\t\trole,\n\t\t\t\t\t\tassign_role_create_link_hash: myAssigneeLink.create_link_hash,\n\t\t\t\t\t});\n\t\t\t\t}\n\n\t\t\t\treturn assignees;\n\t\t\t},\n\t\t),\n\t)"
             },
             {
               "kind": "field",

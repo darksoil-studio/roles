@@ -1,4 +1,7 @@
+import { NotificationsStore } from '@darksoil-studio/notifications';
+import { wrapPathInSvg } from '@holochain-open-dev/elements';
 import {
+	AsyncState,
 	collectionSignal,
 	fromPromise,
 	joinAsync,
@@ -14,9 +17,13 @@ import {
 	decodeComponent,
 	retype,
 } from '@holochain-open-dev/utils';
-import { Link } from '@holochain/client';
+import { Link, encodeHashToBase64 } from '@holochain/client';
+import { msg, str } from '@lit/localize';
+import { mdiSmartCard, mdiSmartCardOff } from '@mdi/js';
+import { decode, encode } from '@msgpack/msgpack';
 
-import { RoleConfig } from './role-config.js';
+import { NOTIFICATIONS_TYPES } from './notifications.js';
+import { RoleConfig, adminRoleConfig } from './role-config.js';
 import { RolesClient } from './roles-client.js';
 import {
 	joinAsyncMap,
@@ -33,10 +40,124 @@ export class RolesStore {
 	constructor(
 		public client: RolesClient,
 		public config: RolesStoreConfig,
+		public notificationsStore?: NotificationsStore,
 	) {
 		// Always watch the unassignments to automatically unassign a role whenever
 		// we receive a unassign role request
 		watch(this.pendingUnassigments, pendingUnassigments => {});
+
+		if (notificationsStore) {
+			notificationsStore.addTypes({
+				[NOTIFICATIONS_TYPES.ASSIGNED_ROLE]: {
+					name: msg('Role assigned'),
+					description: msg('An administrator assigned a role to you'),
+					title(notificationGroup) {
+						return new AsyncState({
+							status: 'completed',
+							value: '',
+						});
+					},
+					contents(notification) {
+						const role: string = (decode(notification.entry.content) as any)
+							.role;
+						const roleConfig =
+							role === adminRoleConfig.role
+								? adminRoleConfig
+								: config.roles_config.find(
+										roleConfig => roleConfig.role === role,
+									);
+
+						return new AsyncState({
+							status: 'completed',
+							value: {
+								body: msg(
+									str`You were assigned the ${roleConfig?.singular_name} role.`,
+								),
+								iconSrc: wrapPathInSvg(mdiSmartCard),
+							},
+						});
+					},
+					onClick(notificationGroup) {
+						// Do nothing
+					},
+				},
+				[NOTIFICATIONS_TYPES.UNASSIGNED_ROLE]: {
+					name: msg('Role removed'),
+					description: msg('An administrator removed a role from you'),
+					title(notificationGroup) {
+						return new AsyncState({
+							status: 'completed',
+							value: '',
+						});
+					},
+					contents(notification) {
+						const role: string = (decode(notification.entry.content) as any)
+							.role;
+						const roleConfig =
+							role === adminRoleConfig.role
+								? adminRoleConfig
+								: config.roles_config.find(
+										roleConfig => roleConfig.role === role,
+									);
+
+						return new AsyncState({
+							status: 'completed',
+							value: {
+								body: msg(
+									str`An administrator removed your ${roleConfig?.singular_name} role.`,
+								),
+								iconSrc: wrapPathInSvg(mdiSmartCardOff),
+							},
+						});
+					},
+					onClick(notificationGroup) {
+						// Do nothing
+					},
+				},
+			});
+			client.onSignal(async signal => {
+				if (
+					signal.type === 'LinkCreated' &&
+					signal.link_type === 'RoleToAssignee'
+				) {
+					// We just assigned a role: notify the assignee
+					await notificationsStore.client.createNotification({
+						content: encode({
+							role: new TextDecoder().decode(signal.action.hashed.content.tag),
+						}),
+						notification_type: NOTIFICATIONS_TYPES.ASSIGNED_ROLE,
+						persistent: false,
+						notification_group: encodeHashToBase64(signal.action.hashed.hash),
+						recipients: [
+							retype(
+								signal.action.hashed.content.target_address,
+								HashType.AGENT,
+							),
+						],
+					});
+				}
+				if (
+					signal.type === 'LinkCreated' &&
+					signal.link_type === 'PendingUnassignments'
+				) {
+					// We just assigned a role: notify the assignee
+					await notificationsStore.client.createNotification({
+						content: encode({
+							role: new TextDecoder().decode(signal.action.hashed.content.tag),
+						}),
+						notification_type: NOTIFICATIONS_TYPES.UNASSIGNED_ROLE,
+						persistent: false,
+						notification_group: encodeHashToBase64(signal.action.hashed.hash),
+						recipients: [
+							retype(
+								signal.action.hashed.content.target_address,
+								HashType.AGENT,
+							),
+						],
+					});
+				}
+			});
+		}
 	}
 
 	/** Role Claim */

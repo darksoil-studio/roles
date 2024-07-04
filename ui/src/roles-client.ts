@@ -1,4 +1,8 @@
-import { EntryRecord, ZomeClient } from '@holochain-open-dev/utils';
+import {
+	EntryRecord,
+	ZomeClient,
+	utf32Decode,
+} from '@holochain-open-dev/utils';
 import {
 	ActionHash,
 	AgentPubKey,
@@ -25,9 +29,8 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	}
 	/** Role Claim */
 
-	async createRoleClaim(roleClaim: RoleClaim): Promise<EntryRecord<RoleClaim>> {
-		const record: Record = await this.callZome('create_role_claim', roleClaim);
-		return new EntryRecord(record);
+	async createRoleClaim(roleClaim: RoleClaim): Promise<void> {
+		await this.callZome('create_role_claim', roleClaim);
 	}
 
 	async getRoleClaim(
@@ -57,10 +60,6 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	}
 
 	/** All Roles */
-
-	async getAllRoles(): Promise<Array<Link>> {
-		return this.callZome('get_all_roles', undefined);
-	}
 
 	async roleBaseAddress(role: string): Promise<EntryHash> {
 		return this.callZome('role_base_address', role);

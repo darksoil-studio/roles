@@ -4,62 +4,6 @@
   "modules": [
     {
       "kind": "javascript-module",
-      "path": "locales/locales.js",
-      "declarations": [
-        {
-          "kind": "variable",
-          "name": "sourceLocale",
-          "default": "`en`",
-          "description": "The locale code that templates in this source code are written in."
-        },
-        {
-          "kind": "variable",
-          "name": "targetLocales",
-          "type": {
-            "text": "array"
-          },
-          "default": "[\n  ,\n]",
-          "description": "The other locale codes that this application is localized into. Sorted\nlexicographically."
-        },
-        {
-          "kind": "variable",
-          "name": "allLocales",
-          "type": {
-            "text": "array"
-          },
-          "default": "[\n  `en`,\n]",
-          "description": "All valid project locale codes. Sorted lexicographically."
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "sourceLocale",
-          "declaration": {
-            "name": "sourceLocale",
-            "module": "locales/locales.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "targetLocales",
-          "declaration": {
-            "name": "targetLocales",
-            "module": "locales/locales.js"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "allLocales",
-          "declaration": {
-            "name": "allLocales",
-            "module": "locales/locales.js"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/context.ts",
       "declarations": [
         {
@@ -346,7 +290,7 @@
               "name": "createRoleClaim",
               "return": {
                 "type": {
-                  "text": "Promise<EntryRecord<RoleClaim>>"
+                  "text": "Promise<void>"
                 }
               },
               "parameters": [
@@ -412,16 +356,6 @@
             },
             {
               "kind": "method",
-              "name": "getAllRoles",
-              "return": {
-                "type": {
-                  "text": "Promise<Array<Link>>"
-                }
-              },
-              "description": "All Roles"
-            },
-            {
-              "kind": "method",
               "name": "roleBaseAddress",
               "return": {
                 "type": {
@@ -435,7 +369,8 @@
                     "text": "string"
                   }
                 }
-              ]
+              ],
+              "description": "All Roles"
             },
             {
               "kind": "method",
@@ -557,6 +492,24 @@
           "members": [
             {
               "kind": "field",
+              "name": "_unassigningRoleCreateLinkHash",
+              "type": {
+                "text": "ActionHash[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_claimingRoles",
+              "type": {
+                "text": "ActionHash[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
               "name": "myRoleClaims",
               "default": "new LazyMap((role: string) =>\n\t\tqueryLiveEntriesSignal(\n\t\t\tthis.client,\n\t\t\t() => this.client.queryUndeletedRoleClaimsForRole(role),\n\t\t\t'RoleClaim',\n\t\t),\n\t)",
               "description": "Role Claim"
@@ -572,27 +525,29 @@
             },
             {
               "kind": "field",
-              "name": "allRolesWithAssignees"
-            },
-            {
-              "kind": "field",
-              "name": "roleBasedAddress",
+              "name": "roleBaseAddress",
               "privacy": "private",
               "default": "new LazyMap((role: string) =>\n\t\tfromPromise(() => this.client.roleBaseAddress(role)),\n\t)"
             },
             {
               "kind": "field",
+              "name": "roleToAssigneeLinks",
+              "privacy": "private",
+              "default": "new LazyMap((role: string) =>\n\t\tpipe(this.roleBaseAddress.get(role), roleBaseAddress =>\n\t\t\tliveLinksSignal(\n\t\t\t\tthis.client,\n\t\t\t\troleBaseAddress,\n\t\t\t\t() => this.client.getAssigneesForRole(role),\n\t\t\t\t'RoleToAssignee',\n\t\t\t\t4000,\n\t\t\t),\n\t\t),\n\t)"
+            },
+            {
+              "kind": "field",
               "name": "assignees",
-              "default": "new LazyMap((role: string) =>\n\t\tpipe(\n\t\t\tthis.roleBasedAddress.get(role),\n\t\t\troleBaseAddress =>\n\t\t\t\tliveLinksSignal(\n\t\t\t\t\tthis.client,\n\t\t\t\t\troleBaseAddress,\n\t\t\t\t\t() => this.client.getAssigneesForRole(role),\n\t\t\t\t\t'RoleToAssignee',\n\t\t\t\t\t4000,\n\t\t\t\t),\n\t\t\t() =>\n\t\t\t\tjoinAsync([\n\t\t\t\t\tthis.pendingUnassigments.get(),\n\t\t\t\t\tthis.myRoleClaims.get(role).get(),\n\t\t\t\t]),\n\t\t\tasync ([pendingUnassignments, myRoleClaims], assigneesLinks) => {\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole = pendingUnassignments.filter(\n\t\t\t\t\tpendingUnassigment =>\n\t\t\t\t\t\tretype(pendingUnassigment.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString() &&\n\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassigment.tag) === role,\n\t\t\t\t);\n\n\t\t\t\t/** If I am assigned to the role but haven't claimed it, do so */\n\n\t\t\t\tconst myAssigneeLink = assigneesLinks.find(\n\t\t\t\t\ta =>\n\t\t\t\t\t\tretype(a.target, HashType.AGENT).toString() ===\n\t\t\t\t\t\tnew Uint8Array(this.client.client.myPubKey).toString(),\n\t\t\t\t);\n\n\t\t\t\tif (\n\t\t\t\t\tmyPendingUnassignmentsForThisRole.length === 0 &&\n\t\t\t\t\tmyAssigneeLink &&\n\t\t\t\t\tmyRoleClaims.length === 0\n\t\t\t\t) {\n\t\t\t\t\tawait this.client.createRoleClaim({\n\t\t\t\t\t\trole,\n\t\t\t\t\t\tassign_role_create_link_hash: myAssigneeLink.create_link_hash,\n\t\t\t\t\t});\n\t\t\t\t}\n\n\t\t\t\treturn assignees;\n\t\t\t},\n\t\t),\n\t)"
+              "default": "new LazyMap(\n\t\t(role: string) =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesLinks = this.roleToAssigneeLinks.get(role).get();\n\t\t\t\tconst pendingUnassignments = this.pendingUnassignments.get();\n\t\t\t\tconst myRoleClaims = this.myRoleClaims.get(role).get();\n\n\t\t\t\tif (assigneesLinks.status !== 'completed') return assigneesLinks;\n\t\t\t\tif (pendingUnassignments.status !== 'completed')\n\t\t\t\t\treturn pendingUnassignments;\n\t\t\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.value.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole =\n\t\t\t\t\tpendingUnassignments.value.filter(\n\t\t\t\t\t\tpendingUnassignment =>\n\t\t\t\t\t\t\tencodeHashToBase64(\n\t\t\t\t\t\t\t\tretype(pendingUnassignment.target, HashType.AGENT),\n\t\t\t\t\t\t\t) === encodeHashToBase64(this.client.client.myPubKey) &&\n\t\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassignment.tag) === role,\n\t\t\t\t\t);\n\t\t\t\tif (myPendingUnassignmentsForThisRole.length > 0) {\n\t\t\t\t\tassignees = assignees.filter(\n\t\t\t\t\t\ta =>\n\t\t\t\t\t\t\tencodeHashToBase64(a) !==\n\t\t\t\t\t\t\tencodeHashToBase64(this.client.client.myPubKey),\n\t\t\t\t\t);\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assignees,\n\t\t\t\t};\n\t\t\t}),\n\t)"
             },
             {
               "kind": "field",
               "name": "rolesForAgent",
-              "default": "new LazyHoloHashMap(assignee =>\n\t\tpipe(\n\t\t\tthis.allRolesWithAssignees,\n\t\t\troles =>\n\t\t\t\tjoinAsyncMap(mapValues(slice(this.assignees, roles), r => r.get())),\n\t\t\tassigneesByRoles => {\n\t\t\t\tconst assigneeRoles: string[] = [];\n\n\t\t\t\tfor (const [role, assignees] of Array.from(\n\t\t\t\t\tassigneesByRoles.entries(),\n\t\t\t\t)) {\n\t\t\t\t\tif (assignees.find(a => assignee.toString() === a.toString())) {\n\t\t\t\t\t\tassigneeRoles.push(role);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\treturn assigneeRoles;\n\t\t\t},\n\t\t),\n\t)"
+              "default": "new LazyHoloHashMap(\n\t\tassignee =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesByRoles = joinAsyncMap(\n\t\t\t\t\tmapValues(slice(this.assignees, this.allRoles), r => r.get()),\n\t\t\t\t);\n\t\t\t\tif (assigneesByRoles.status !== 'completed') return assigneesByRoles;\n\n\t\t\t\tconst assigneeRoles: string[] = [];\n\n\t\t\t\tfor (const [role, assignees] of Array.from(\n\t\t\t\t\tassigneesByRoles.value.entries(),\n\t\t\t\t)) {\n\t\t\t\t\tif (\n\t\t\t\t\t\tassignees.find(\n\t\t\t\t\t\t\ta => encodeHashToBase64(assignee) === encodeHashToBase64(a),\n\t\t\t\t\t\t)\n\t\t\t\t\t) {\n\t\t\t\t\t\tassigneeRoles.push(role);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assigneeRoles,\n\t\t\t\t};\n\t\t\t}),\n\t)"
             },
             {
               "kind": "field",
-              "name": "pendingUnassigments"
+              "name": "pendingUnassignments"
             }
           ]
         }
@@ -759,6 +714,62 @@
       "path": "src/types.ts",
       "declarations": [],
       "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "locales/locales.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "sourceLocale",
+          "default": "`en`",
+          "description": "The locale code that templates in this source code are written in."
+        },
+        {
+          "kind": "variable",
+          "name": "targetLocales",
+          "type": {
+            "text": "array"
+          },
+          "default": "[\n  ,\n]",
+          "description": "The other locale codes that this application is localized into. Sorted\nlexicographically."
+        },
+        {
+          "kind": "variable",
+          "name": "allLocales",
+          "type": {
+            "text": "array"
+          },
+          "default": "[\n  `en`,\n]",
+          "description": "All valid project locale codes. Sorted lexicographically."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "sourceLocale",
+          "declaration": {
+            "name": "sourceLocale",
+            "module": "locales/locales.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "targetLocales",
+          "declaration": {
+            "name": "targetLocales",
+            "module": "locales/locales.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "allLocales",
+          "declaration": {
+            "name": "allLocales",
+            "module": "locales/locales.js"
+          }
+        }
+      ]
     },
     {
       "kind": "javascript-module",

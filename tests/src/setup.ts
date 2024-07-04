@@ -1,13 +1,18 @@
 import { AppBundle, encodeHashToBase64 } from '@holochain/client';
-import { AgentApp, Scenario, enableAndGetAgentApp } from '@holochain/tryorama';
-import { decode, encode } from '@msgpack/msgpack';
-import { decompressSync, unzipSync } from 'fflate';
+import {
+	AgentApp,
+	Scenario,
+	enableAndGetAgentApp,
+	pause,
+} from '@holochain/tryorama';
+import { decode } from '@msgpack/msgpack';
+import { decompressSync } from 'fflate';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { RolesClient } from '../../ui/src/roles-client.js';
-import { RolesStore } from '../../ui/src/roles-store.js';
+import { RolesStore, RolesStoreConfig } from '../../ui/src/roles-store.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,16 +64,44 @@ export async function setup(scenario: Scenario) {
 		{ appBundleSource },
 	]);
 
+	await aliceConductor
+		.adminWs()
+		.authorizeSigningCredentials(
+			(Object.values(appInfo.cell_info)[0][0] as any).provisioned.cell_id,
+		);
+
+	await bob.conductor
+		.adminWs()
+		.authorizeSigningCredentials(bob.cells[0].cell_id);
+
+	await carol.conductor
+		.adminWs()
+		.authorizeSigningCredentials(carol.cells[0].cell_id);
+
+	const config: RolesStoreConfig = {
+		roles_config: [
+			{
+				role: 'editor',
+				description: 'An editor role can create special entries',
+				plural_name: 'editors',
+				singular_name: 'editor',
+			},
+		],
+	};
+
 	const aliceStore = new RolesStore(
 		new RolesClient(appWs as any, 'roles_test', 'roles'),
+		config,
 	);
 
 	const bobStore = new RolesStore(
 		new RolesClient(bob.appWs as any, 'roles_test', 'roles'),
+		config,
 	);
 
 	const carolStore = new RolesStore(
 		new RolesClient(carol.appWs as any, 'roles_test', 'roles'),
+		config,
 	);
 
 	// Shortcut peer discovery through gossip and register all agents in every

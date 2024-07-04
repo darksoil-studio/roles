@@ -1,13 +1,12 @@
 use hdk::prelude::*;
 use roles_integrity::*;
 
+use crate::utils::create_relaxed;
+
 #[hdk_extern]
-pub fn create_role_claim(role_claim: RoleClaim) -> ExternResult<Record> {
-    let role_claim_hash = create_entry(&EntryTypes::RoleClaim(role_claim.clone()))?;
-    let record = get(role_claim_hash.clone(), GetOptions::default())?.ok_or(wasm_error!(
-        WasmErrorInner::Guest("Could not find the newly created RoleClaim".to_string())
-    ))?;
-    Ok(record)
+pub fn create_role_claim(role_claim: RoleClaim) -> ExternResult<()> {
+    create_relaxed(EntryTypes::RoleClaim(role_claim.clone()))?;
+    Ok(())
 }
 
 #[hdk_extern]

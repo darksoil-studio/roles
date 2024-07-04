@@ -8,6 +8,7 @@ import '@holochain-open-dev/profiles/dist/elements/profile-list-item.js';
 import { SearchAgents } from '@holochain-open-dev/profiles/dist/elements/search-agents.js';
 import '@holochain-open-dev/profiles/dist/elements/search-agents.js';
 import { SignalWatcher } from '@holochain-open-dev/signals';
+import { HashType, retype } from '@holochain-open-dev/utils';
 import { AgentPubKey, encodeHashToBase64 } from '@holochain/client';
 import { consume } from '@lit/context';
 import { msg, str } from '@lit/localize';
@@ -112,7 +113,7 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 		assignee: AgentPubKey,
 		assigneesCount: number,
 	) {
-		const pendingUnassignments = this.rolesStore.pendingUnassigments.get();
+		const pendingUnassignments = this.rolesStore.pendingUnassignments.get();
 		switch (pendingUnassignments.status) {
 			case 'pending':
 				return html`<sl-skeleton></sl-skeleton>`;
@@ -125,7 +126,8 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 			case 'completed':
 				const pendingUnassignment = !!pendingUnassignments.value.find(
 					link =>
-						link.target.toString() === assignee.toString() &&
+						retype(link.target, HashType.AGENT).toString() ===
+							assignee.toString() &&
 						new TextDecoder().decode(link.tag) === roleConfig.role,
 				);
 				if (pendingUnassignment) {
@@ -293,9 +295,7 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 
 	assigneesForRoleAndIAmAdmin() {
 		const assignees = this.rolesStore.assignees.get(this.role).get();
-		const myRoles = this.rolesStore.rolesForAgent
-			.get(this.rolesStore.client.client.myPubKey)
-			.get();
+		const myRoles = this.rolesStore.myRoles.get();
 		if (assignees.status !== 'completed') return assignees;
 		if (myRoles.status !== 'completed') return myRoles;
 		const iAmAdmin = myRoles.value.includes(adminRoleConfig.role);

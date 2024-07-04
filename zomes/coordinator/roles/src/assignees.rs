@@ -1,7 +1,10 @@
 use hdk::prelude::*;
 use roles_integrity::*;
 
-use crate::role_claim::query_undeleted_role_claims_for_role;
+use crate::{
+    role_claim::query_undeleted_role_claims_for_role,
+    utils::{delete_link_relaxed, delete_relaxed},
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AssignRoleInput {
@@ -105,10 +108,10 @@ pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<(
     }?;
 
     let role_claim = RoleClaim::try_from(role_claim_record.clone())?;
-    delete_entry(role_claim_record.action_address().clone())?;
-    delete_link(role_claim.assign_role_create_link_hash)?;
+    delete_relaxed(role_claim_record.action_address().clone())?;
+    delete_link_relaxed(role_claim.assign_role_create_link_hash)?;
 
-    delete_link(pending_unassignment_link)?;
+    delete_link_relaxed(pending_unassignment_link)?;
     Ok(())
 }
 

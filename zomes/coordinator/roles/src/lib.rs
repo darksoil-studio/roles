@@ -3,9 +3,9 @@ use hdk::prelude::*;
 use role_claim::create_role_claim;
 use roles_integrity::*;
 
-pub mod all_roles;
 pub mod assignees;
 pub mod role_claim;
+pub mod utils;
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {

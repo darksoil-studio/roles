@@ -1,23 +1,25 @@
 import { NotificationsStore } from '@darksoil-studio/notifications';
-import { wrapPathInSvg } from '@holochain-open-dev/elements';
+import { wrapPathInSvg } from '@holochain-open-dev/elements/dist/icon.js';
 import {
+	AsyncComputed,
 	AsyncState,
+	Signal,
 	collectionSignal,
 	fromPromise,
 	joinAsync,
 	liveLinksSignal,
 	pipe,
+	toPromise,
 	uniquify,
-	watch,
 } from '@holochain-open-dev/signals';
 import {
 	HashType,
 	LazyHoloHashMap,
 	LazyMap,
-	decodeComponent,
+	hashEntry,
 	retype,
 } from '@holochain-open-dev/utils';
-import { Link, encodeHashToBase64 } from '@holochain/client';
+import { ActionHash, Link, encodeHashToBase64 } from '@holochain/client';
 import { msg, str } from '@lit/localize';
 import { mdiSmartCard, mdiSmartCardOff } from '@mdi/js';
 import { decode, encode } from '@msgpack/msgpack';
@@ -37,6 +39,8 @@ export interface RolesStoreConfig {
 }
 
 export class RolesStore {
+	private _unassigningRoleCreateLinkHash: ActionHash[] = [];
+	private _claimingRoles: ActionHash[] = [];
 	constructor(
 		public client: RolesClient,
 		public config: RolesStoreConfig,
@@ -44,7 +48,111 @@ export class RolesStore {
 	) {
 		// Always watch the unassignments to automatically unassign a role whenever
 		// we receive a unassign role request
-		watch(this.pendingUnassigments, pendingUnassigments => {});
+		effect(async () => {
+			const pendingUnassignments = this.pendingUnassignments.get();
+			if (pendingUnassignments.status !== 'completed') return;
+
+			const isUnassignmentLinkForMe = (pendingUnassignment: Link) =>
+				encodeHashToBase64(
+					retype(pendingUnassignment.target, HashType.AGENT),
+				) === encodeHashToBase64(this.client.client.myPubKey);
+
+			const myPendingUnassignmentsForThisRole =
+				pendingUnassignments.value.filter(link =>
+					isUnassignmentLinkForMe(link),
+				);
+
+			if (myPendingUnassignmentsForThisRole.length > 0) {
+				for (const link of myPendingUnassignmentsForThisRole) {
+					if (
+						!this._unassigningRoleCreateLinkHash.find(
+							linkHash =>
+								encodeHashToBase64(linkHash) ===
+								encodeHashToBase64(link.create_link_hash),
+						)
+					) {
+						const myRoleClaimsForThisRole = await toPromise(
+							this.myRoleClaims.get(new TextDecoder().decode(link.tag)),
+						);
+						if (myRoleClaimsForThisRole.length === 0) return; // Wait for the RoleClaim to actually be committed by the other effect, then go ahead and unassign the role
+
+						this._unassigningRoleCreateLinkHash.push(link.create_link_hash);
+						this.client.unassignMyRole(link.create_link_hash).finally(() => {
+							this._unassigningRoleCreateLinkHash =
+								this._unassigningRoleCreateLinkHash.filter(
+									linkHash =>
+										encodeHashToBase64(linkHash) !==
+										encodeHashToBase64(link.create_link_hash),
+								);
+						});
+					}
+				}
+			}
+		});
+
+		effect(async () => {
+			const myRoles = this.rolesForAgent.get(this.client.client.myPubKey).get();
+			const pendingUnassignments = this.pendingUnassignments.get();
+			if (myRoles.status !== 'completed') return;
+			if (pendingUnassignments.status !== 'completed') return;
+
+			const myRoleClaims = joinAsync(
+				myRoles.value.map(role => this.myRoleClaims.get(role).get()),
+			);
+
+			if (myRoleClaims.status !== 'completed') return;
+
+			/** If I am assigned to the role but haven't claimed it, do so */
+
+			for (let i = 0; i < myRoles.value.length; i++) {
+				const role = myRoles.value[i];
+				const myRoleClaimsForThisRole = myRoleClaims.value[i];
+
+				const myPendingUnassignmentsForThisRole =
+					pendingUnassignments.value.filter(
+						pendingUnassignment =>
+							encodeHashToBase64(
+								retype(pendingUnassignment.target, HashType.AGENT),
+							) === encodeHashToBase64(this.client.client.myPubKey) &&
+							new TextDecoder().decode(pendingUnassignment.tag) === role,
+					);
+				if (
+					myPendingUnassignmentsForThisRole.length === 0 &&
+					myRoleClaimsForThisRole.length === 0
+				) {
+					const assigneesLinks = this.roleToAssigneeLinks.get(role).get();
+					if (assigneesLinks.status !== 'completed') return;
+					const link = assigneesLinks.value.find(
+						l =>
+							encodeHashToBase64(retype(l.target, HashType.AGENT)) ===
+							encodeHashToBase64(this.client.client.myPubKey),
+					);
+					if (link) {
+						if (
+							!this._claimingRoles.find(
+								actionHash =>
+									encodeHashToBase64(actionHash) ===
+									encodeHashToBase64(link.create_link_hash),
+							)
+						) {
+							this._claimingRoles.push(link.create_link_hash);
+							await this.client
+								.createRoleClaim({
+									role,
+									assign_role_create_link_hash: link.create_link_hash,
+								})
+								.finally(() => {
+									this._claimingRoles = this._claimingRoles.filter(
+										actionHash =>
+											encodeHashToBase64(actionHash) ===
+											encodeHashToBase64(link.create_link_hash),
+									);
+								});
+						}
+					}
+				}
+			}
+		});
 
 		if (notificationsStore) {
 			notificationsStore.addTypes({
@@ -71,7 +179,7 @@ export class RolesStore {
 							status: 'completed',
 							value: {
 								body: msg(
-									str`You were assigned the ${roleConfig?.singular_name} role.`,
+									str`You have been assigned the ${roleConfig?.singular_name} role.`,
 								),
 								iconSrc: wrapPathInSvg(mdiSmartCard),
 							},
@@ -120,6 +228,15 @@ export class RolesStore {
 					signal.type === 'LinkCreated' &&
 					signal.link_type === 'RoleToAssignee'
 				) {
+					const recipient = retype(
+						signal.action.hashed.content.target_address,
+						HashType.AGENT,
+					);
+					if (
+						encodeHashToBase64(recipient) ===
+						encodeHashToBase64(this.client.client.myPubKey)
+					)
+						return;
 					// We just assigned a role: notify the assignee
 					await notificationsStore.client.createNotification({
 						content: encode({
@@ -128,18 +245,22 @@ export class RolesStore {
 						notification_type: NOTIFICATIONS_TYPES.ASSIGNED_ROLE,
 						persistent: false,
 						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients: [
-							retype(
-								signal.action.hashed.content.target_address,
-								HashType.AGENT,
-							),
-						],
+						recipients: [recipient],
 					});
 				}
 				if (
 					signal.type === 'LinkCreated' &&
 					signal.link_type === 'PendingUnassignments'
 				) {
+					const recipient = retype(
+						signal.action.hashed.content.target_address,
+						HashType.AGENT,
+					);
+					if (
+						encodeHashToBase64(recipient) ===
+						encodeHashToBase64(this.client.client.myPubKey)
+					)
+						return;
 					// We just assigned a role: notify the assignee
 					await notificationsStore.client.createNotification({
 						content: encode({
@@ -148,12 +269,7 @@ export class RolesStore {
 						notification_type: NOTIFICATIONS_TYPES.UNASSIGNED_ROLE,
 						persistent: false,
 						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients: [
-							retype(
-								signal.action.hashed.content.target_address,
-								HashType.AGENT,
-							),
-						],
+						recipients: [recipient],
 					});
 				}
 			});
@@ -175,118 +291,149 @@ export class RolesStore {
 		return ['admin', ...this.config.roles_config.map(r => r.role)];
 	}
 
-	allRolesWithAssignees = pipe(
-		collectionSignal(this.client, () => this.client.getAllRoles(), 'RolesPath'),
-		allRoles => allRoles.map(l => decodeComponent(l.tag)),
-	);
-
-	private roleBasedAddress = new LazyMap((role: string) =>
+	private roleBaseAddress = new LazyMap((role: string) =>
 		fromPromise(() => this.client.roleBaseAddress(role)),
 	);
 
-	assignees = new LazyMap((role: string) =>
-		pipe(
-			this.roleBasedAddress.get(role),
-			roleBaseAddress =>
-				liveLinksSignal(
-					this.client,
-					roleBaseAddress,
-					() => this.client.getAssigneesForRole(role),
-					'RoleToAssignee',
-					4000,
-				),
-			() =>
-				joinAsync([
-					this.pendingUnassigments.get(),
-					this.myRoleClaims.get(role).get(),
-				]),
-			async ([pendingUnassignments, myRoleClaims], assigneesLinks) => {
-				let assignees = uniquify(
-					assigneesLinks.map(a => retype(a.target, HashType.AGENT)),
-				);
-
-				const myPendingUnassignmentsForThisRole = pendingUnassignments.filter(
-					pendingUnassigment =>
-						retype(pendingUnassigment.target, HashType.AGENT).toString() ===
-							new Uint8Array(this.client.client.myPubKey).toString() &&
-						new TextDecoder().decode(pendingUnassigment.tag) === role,
-				);
-
-				/** If I am assigned to the role but haven't claimed it, do so */
-
-				const myAssigneeLink = assigneesLinks.find(
-					a =>
-						retype(a.target, HashType.AGENT).toString() ===
-						new Uint8Array(this.client.client.myPubKey).toString(),
-				);
-
-				if (
-					myPendingUnassignmentsForThisRole.length === 0 &&
-					myAssigneeLink &&
-					myRoleClaims.length === 0
-				) {
-					await this.client.createRoleClaim({
-						role,
-						assign_role_create_link_hash: myAssigneeLink.create_link_hash,
-					});
-				}
-
-				return assignees;
-			},
+	private roleToAssigneeLinks = new LazyMap((role: string) =>
+		pipe(this.roleBaseAddress.get(role), roleBaseAddress =>
+			liveLinksSignal(
+				this.client,
+				roleBaseAddress,
+				() => this.client.getAssigneesForRole(role),
+				'RoleToAssignee',
+				4000,
+			),
 		),
 	);
 
-	rolesForAgent = new LazyHoloHashMap(assignee =>
-		pipe(
-			this.allRolesWithAssignees,
-			roles =>
-				joinAsyncMap(mapValues(slice(this.assignees, roles), r => r.get())),
-			assigneesByRoles => {
+	assignees = new LazyMap(
+		(role: string) =>
+			new AsyncComputed(() => {
+				const assigneesLinks = this.roleToAssigneeLinks.get(role).get();
+				const pendingUnassignments = this.pendingUnassignments.get();
+				const myRoleClaims = this.myRoleClaims.get(role).get();
+
+				if (assigneesLinks.status !== 'completed') return assigneesLinks;
+				if (pendingUnassignments.status !== 'completed')
+					return pendingUnassignments;
+				if (myRoleClaims.status !== 'completed') return myRoleClaims;
+
+				let assignees = uniquify(
+					assigneesLinks.value.map(a => retype(a.target, HashType.AGENT)),
+				);
+
+				const myPendingUnassignmentsForThisRole =
+					pendingUnassignments.value.filter(
+						pendingUnassignment =>
+							encodeHashToBase64(
+								retype(pendingUnassignment.target, HashType.AGENT),
+							) === encodeHashToBase64(this.client.client.myPubKey) &&
+							new TextDecoder().decode(pendingUnassignment.tag) === role,
+					);
+				if (myPendingUnassignmentsForThisRole.length > 0) {
+					assignees = assignees.filter(
+						a =>
+							encodeHashToBase64(a) !==
+							encodeHashToBase64(this.client.client.myPubKey),
+					);
+				}
+
+				return {
+					status: 'completed',
+					value: assignees,
+				};
+			}),
+	);
+
+	rolesForAgent = new LazyHoloHashMap(
+		assignee =>
+			new AsyncComputed(() => {
+				const assigneesByRoles = joinAsyncMap(
+					mapValues(slice(this.assignees, this.allRoles), r => r.get()),
+				);
+				if (assigneesByRoles.status !== 'completed') return assigneesByRoles;
+
 				const assigneeRoles: string[] = [];
 
 				for (const [role, assignees] of Array.from(
-					assigneesByRoles.entries(),
+					assigneesByRoles.value.entries(),
 				)) {
-					if (assignees.find(a => assignee.toString() === a.toString())) {
+					if (
+						assignees.find(
+							a => encodeHashToBase64(assignee) === encodeHashToBase64(a),
+						)
+					) {
 						assigneeRoles.push(role);
 					}
 				}
 
-				return assigneeRoles;
-			},
-		),
+				return {
+					status: 'completed',
+					value: assigneeRoles,
+				};
+			}),
 	);
 
-	pendingUnassigments = pipe(
-		collectionSignal(
-			this.client,
-			() => this.client.getPendingUnassignments(),
-			'PendingUnassignments',
-		),
-		links =>
-			links.map(link => ({
-				...link,
-				target: retype(link.target, HashType.AGENT),
-			})) as Link[],
-		async pendingUnassignments => {
-			/** If I have been requested to unassign a role and I still have it, unassign it */
-			const isUnassignmentLinkForMe = (pendingUnassigment: Link) =>
-				retype(pendingUnassigment.target, HashType.AGENT).toString() ===
-				new Uint8Array(this.client.client.myPubKey).toString();
-
-			const myPendingUnassignmentsForThisRole = pendingUnassignments.filter(
-				isUnassignmentLinkForMe,
-			);
-			if (myPendingUnassignmentsForThisRole.length > 0) {
-				for (const link of myPendingUnassignmentsForThisRole) {
-					await this.client.unassignMyRole(link.create_link_hash);
-				}
-
-				pendingUnassignments = pendingUnassignments.filter(
-					link => !isUnassignmentLinkForMe(link),
-				);
-			}
-			return pendingUnassignments;
-		},
+	pendingUnassignments = collectionSignal(
+		this.client,
+		() => this.client.getPendingUnassignments(),
+		'PendingUnassignments',
+		4000,
 	);
+
+	myRoles = new AsyncComputed(() => {
+		const myRoles = this.rolesForAgent.get(this.client.client.myPubKey).get();
+		if (myRoles.status !== 'completed') return myRoles;
+
+		const myRoleClaims = joinAsync(
+			myRoles.value.map(role => this.myRoleClaims.get(role).get()),
+		);
+		if (myRoleClaims.status !== 'completed') return myRoleClaims;
+
+		const myClaimedRoles = myRoles.value.filter(
+			(_, i) => myRoleClaims.value[i].length > 0,
+		);
+
+		return {
+			status: 'completed',
+			value: myClaimedRoles,
+		};
+	});
+}
+
+// NOTE: This scheduling logic is too basic to be useful. Do not copy/paste.
+// This function would usually live in a library/framework, not application code
+let pending = false;
+
+let w = new Signal.subtle.Watcher(() => {
+	if (!pending) {
+		pending = true;
+		queueMicrotask(() => {
+			pending = false;
+			for (let s of w.getPending()) s.get();
+			w.watch();
+		});
+	}
+});
+
+// TODO: why do we need to use this complicated effect method?
+// An effect effect Signal which evaluates to cb, which schedules a read of
+// itself on the microtask queue whenever one of its dependencies might change
+function effect(cb: any) {
+	let destructor: any;
+	let c = new Signal.Computed(() => {
+		if (typeof destructor === 'function') {
+			destructor();
+		}
+		destructor = cb();
+	});
+	w.watch(c);
+	c.get();
+	return () => {
+		if (typeof destructor === 'function') {
+			destructor();
+		}
+		w.unwatch(c);
+	};
 }

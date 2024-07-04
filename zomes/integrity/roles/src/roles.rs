@@ -6,16 +6,16 @@ pub fn all_roles_path() -> ExternResult<TypedPath> {
     Path::from("all_roles").typed(LinkTypes::RolesPath)
 }
 
-#[hdk_extern]
-pub fn role_base_address(role: String) -> ExternResult<EntryHash> {
-    role_path(&role)?.path_entry_hash()
-}
-
 pub fn role_path(role: &String) -> ExternResult<TypedPath> {
     let all_roles = all_roles_path()?;
     let mut components = all_roles.path.0;
     components.push(Component::from(role));
     Path::from(components).typed(LinkTypes::RolesPath)
+}
+
+#[hdk_extern]
+pub fn role_base_address(role: String) -> ExternResult<EntryHash> {
+    role_path(&role)?.path_entry_hash()
 }
 
 pub fn validate_create_link_roles_path(

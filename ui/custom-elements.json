@@ -286,6 +286,30 @@
     },
     {
       "kind": "javascript-module",
+      "path": "src/notifications.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "NOTIFICATIONS_TYPES",
+          "type": {
+            "text": "object"
+          },
+          "default": "{\n\tASSIGNED_ROLE: 'roles/assigned_role',\n\tUNASSIGNED_ROLE: 'roles/unassigned_role',\n}"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "NOTIFICATIONS_TYPES",
+          "declaration": {
+            "name": "NOTIFICATIONS_TYPES",
+            "module": "src/notifications.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "src/role-config.ts",
       "declarations": [
         {

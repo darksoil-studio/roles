@@ -4414,11 +4414,11 @@
         "versions": "versions_7"
       },
       "locked": {
-        "lastModified": 1720086707,
-        "narHash": "sha256-jNmjGKjmqmkl71klZHBnQOOrdgzEq82FZdyZEuNIBh4=",
+        "lastModified": 1720090319,
+        "narHash": "sha256-NeI8bNpohFTk8r0f8nh1P7M4p1OPUX4kL3+27f9cfX4=",
         "owner": "darksoil-studio",
         "repo": "notifications",
-        "rev": "cff78fc3a8a07a158d4baf92c9c0cd48347d6797",
+        "rev": "58b44bd9e23dcafa728b6f9dd932c75c07657af0",
         "type": "github"
       },
       "original": {

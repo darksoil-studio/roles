@@ -5,6 +5,7 @@ import {
 	liveLinksSignal,
 	pipe,
 	uniquify,
+	watch,
 } from '@holochain-open-dev/signals';
 import {
 	HashType,
@@ -32,7 +33,11 @@ export class RolesStore {
 	constructor(
 		public client: RolesClient,
 		public config: RolesStoreConfig,
-	) {}
+	) {
+		// Always watch the unassignments to automatically unassign a role whenever
+		// we receive a unassign role request
+		watch(this.pendingUnassigments, pendingUnassigments => {});
+	}
 
 	/** Role Claim */
 	myRoleClaims = new LazyMap((role: string) =>
@@ -79,25 +84,12 @@ export class RolesStore {
 					assigneesLinks.map(a => retype(a.target, HashType.AGENT)),
 				);
 
-				/** If I have been requested to unassign a role and I still have it, unassign it */
-
 				const myPendingUnassignmentsForThisRole = pendingUnassignments.filter(
 					pendingUnassigment =>
 						retype(pendingUnassigment.target, HashType.AGENT).toString() ===
 							new Uint8Array(this.client.client.myPubKey).toString() &&
 						new TextDecoder().decode(pendingUnassigment.tag) === role,
 				);
-				if (myPendingUnassignmentsForThisRole.length > 0) {
-					for (const link of myPendingUnassignmentsForThisRole) {
-						await this.client.unassignMyRole(link.create_link_hash);
-					}
-
-					assignees = assignees.filter(
-						assignee =>
-							assignee.toString() !==
-							new Uint8Array(this.client.client.myPubKey).toString(),
-					);
-				}
 
 				/** If I am assigned to the role but haven't claimed it, do so */
 
@@ -155,8 +147,25 @@ export class RolesStore {
 				...link,
 				target: retype(link.target, HashType.AGENT),
 			})) as Link[],
-		async pendingUnassigments => {
-			return pendingUnassigments;
+		async pendingUnassignments => {
+			/** If I have been requested to unassign a role and I still have it, unassign it */
+			const isUnassignmentLinkForMe = (pendingUnassigment: Link) =>
+				retype(pendingUnassigment.target, HashType.AGENT).toString() ===
+				new Uint8Array(this.client.client.myPubKey).toString();
+
+			const myPendingUnassignmentsForThisRole = pendingUnassignments.filter(
+				isUnassignmentLinkForMe,
+			);
+			if (myPendingUnassignmentsForThisRole.length > 0) {
+				for (const link of myPendingUnassignmentsForThisRole) {
+					await this.client.unassignMyRole(link.create_link_hash);
+				}
+
+				pendingUnassignments = pendingUnassignments.filter(
+					link => !isUnassignmentLinkForMe(link),
+				);
+			}
+			return pendingUnassignments;
 		},
 	);
 }

@@ -92,8 +92,8 @@ rec {
                 --coordinator-zome-name roles \
                 --remote-zome-git-url github:darksoil-studio/roles \
                 --remote-npm-package-name roles \
-                --remote-npm-package-path ui" \
-                --remote-zome-git-branch main \ 
+                --remote-npm-package-path ui \
+                --remote-zome-git-branch main" 
           '';
         };
       };

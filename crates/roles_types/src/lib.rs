@@ -1,5 +1,5 @@
+use hdi::prelude::holo_hash::AgentPubKeyB64;
 use hdi::prelude::*;
-use holo_hash::AgentPubKeyB64;
 
 #[derive(Serialize, Deserialize, Debug, SerializedBytes)]
 pub struct Properties {

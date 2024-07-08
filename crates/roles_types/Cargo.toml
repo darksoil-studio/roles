@@ -9,5 +9,6 @@ name = "roles_types"
 
 [dependencies]
 hdi = { workspace = true }
+holo_hash = { version = "0.3.1", features = ["encoding"] }
 
 serde = { workspace = true }

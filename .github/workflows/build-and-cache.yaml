@@ -28,7 +28,7 @@ jobs:
 
       - name: Build zomes
         env:
-          CACHIX_AUTH_TOKEN: "$"
+          CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
           nix build -L .#roles_integrity
           cachix push holochain-open-dev $(nix path-info --accept-flake-config .#roles_integrity)

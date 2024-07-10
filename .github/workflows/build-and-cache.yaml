@@ -22,6 +22,10 @@ jobs:
         with:
           name: holochain-open-dev
 
+      - uses: cachix/cachix-action@v14
+        with:
+          name: darksoil-studio
+
       - name: Install and test
         run: |
           nix develop --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"

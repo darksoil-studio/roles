@@ -4,7 +4,7 @@ on:
     branches: [ main ]
 
 jobs:
-  testbuild:
+  build-and-cache-nix-packages:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,24 +28,24 @@ jobs:
 
       - name: Install and test
         run: |
-          nix develop --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"
+          nix develop --accept-flake-config --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"
 
       - name: Build zomes
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          nix build -L .#roles_integrity
-          cachix push holochain-open-dev $(nix path-info --accept-flake-config .#roles_integrity)
-          cachix pin holochain-open-dev roles_integrity_debug $(nix path-info --accept-flake-config .#roles_integrity)
+          nix build --accept-flake-config  -L .#roles_integrity
+          cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles_integrity)
+          cachix pin darksoil-studio roles_integrity_debug $(nix path-info --accept-flake-config .#roles_integrity)
 
-          nix build -L .#roles_integrity.meta.release
-          cachix push holochain-open-dev $(nix path-info --accept-flake-config .#roles_integrity)
-          cachix pin holochain-open-dev roles_integrity $(nix path-info --accept-flake-config .#roles_integrity.meta.release)
+          nix build --accept-flake-config  -L .#roles_integrity.meta.release
+          cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles_integrity)
+          cachix pin darksoil-studio roles_integrity $(nix path-info --accept-flake-config .#roles_integrity.meta.release)
 
-          nix build -L .#roles
-          cachix push holochain-open-dev $(nix path-info --accept-flake-config .#roles)
-          cachix pin holochain-open-dev roles_debug $(nix path-info --accept-flake-config .#roles)
+          nix build --accept-flake-config  -L .#roles
+          cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles)
+          cachix pin darksoil-studio roles_debug $(nix path-info --accept-flake-config .#roles)
 
-          nix build -L .#roles.meta.release
-          cachix push holochain-open-dev $(nix path-info --accept-flake-config .#roles.meta.release)
-          cachix pin holochain-open-dev roles $(nix path-info --accept-flake-config .#roles.meta.release)
+          nix build --accept-flake-config  -L .#roles.meta.release
+          cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles.meta.release)
+          cachix pin darksoil-studio roles $(nix path-info --accept-flake-config .#roles.meta.release)

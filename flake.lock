@@ -4450,11 +4450,11 @@
         "versions": "versions_9"
       },
       "locked": {
-        "lastModified": 1720696401,
-        "narHash": "sha256-GmD8PvzCaUC6A1CE6ZJAas1WMCeY1O1UsdQ7XmNMe4c=",
+        "lastModified": 1720697436,
+        "narHash": "sha256-q1OTHM1CEY1tkSCk3QNHCaUA9+wEqmPoC599HyHEcCo=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "60eff872d11d19b7094f529155af186f5ec8e11f",
+        "rev": "7fe98d0c8781a6a425351f3631423e037e1a1e05",
         "type": "github"
       },
       "original": {

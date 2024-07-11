@@ -1,4 +1,4 @@
-# Assumes hc-progenitor and hc-embark are in the path
+# Assumes hc-progenitor and hc-pilot are in the path
 set -e
 
 # Kill all subprocesses on exit
@@ -53,7 +53,7 @@ echo "Created progenitor: $PROGENITOR"
 # Run all other agents
 for i in $(seq 1 $((NUM_AGENTS-1)) ); do
   # progenitor.happ will contain a copy of the app bundle with the progenitor's pub key in the properties
-  hc-embark --password pass "$WORKDIR/progenitor.happ" --ui-port "$UI_PORT" --bootstrap-url "http://127.0.0.1:$BOOTSTRAP_PORT" --signal-url "ws://127.0.0.1:$SIGNAL_PORT" &
+  hc-pilot --password pass "$WORKDIR/progenitor.happ" --ui-port "$UI_PORT" --bootstrap-url "http://127.0.0.1:$BOOTSTRAP_PORT" --signal-url "ws://127.0.0.1:$SIGNAL_PORT" &
 done
 
 wait

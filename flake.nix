@@ -12,7 +12,7 @@ rec {
 
     hc-infra.url = "github:holochain-open-dev/infrastructure";
     crane.follows = "hc-infra/crane";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/hc-embark";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/develop";
     scaffolding.url = "github:holochain-open-dev/templates";
 
     profiles.url = "github:holochain-open-dev/profiles/nixify";
@@ -52,7 +52,7 @@ rec {
             runtimeInputs = [
               happ
               (outputs inputs).packages.${system}.hc-progenitor
-              inputs.p2p-shipyard.outputs.packages.${system}.hc-embark
+              inputs.p2p-shipyard.outputs.packages.${system}.hc-pilot
             ];
 
             text = ''

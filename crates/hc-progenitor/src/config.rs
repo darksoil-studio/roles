@@ -35,7 +35,7 @@ pub fn wait_for_config(workdir: &PathBuf, timeout_secs: Option<u32>) -> anyhow::
         }
         let elapsed = SystemTime::now().duration_since(start)?;
         let timeout = timeout_secs.unwrap_or(120);
-        if elapsed.as_secs() > timeout {
+        if elapsed.as_secs() > timeout as u64 {
             return Err(anyhow!("Timed out waiting for the progenitor to be run: run `hc progenitor run` in another terminal and then run other commands in another window"));
         }
         std::thread::sleep(Duration::from_millis(200))

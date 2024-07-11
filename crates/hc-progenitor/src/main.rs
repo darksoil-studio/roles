@@ -27,7 +27,7 @@ enum Commands {
     /// does testing things
     Run(RunArgs),
     PrintProgenitor {
-        #[args(long)]
+        #[arg(long)]
         timeout_secs: Option<u32>,
     },
 }
@@ -37,10 +37,10 @@ fn main() -> anyhow::Result<()> {
 
     match args.command {
         Commands::Run(run_args) => run(args.workdir, run_args),
-        Commands::PrintProgenitor => {
+        Commands::PrintProgenitor { timeout_secs } => {
             let runtime = Runtime::new()?;
             let result: anyhow::Result<()> = runtime.block_on(async move {
-                let config = wait_for_config(&args.workdir, args.timeout_secs)?;
+                let config = wait_for_config(&args.workdir, timeout_secs)?;
                 let admin_ws =
                     AdminWebsocket::connect((Ipv4Addr::LOCALHOST, config.admin_port)).await?;
 

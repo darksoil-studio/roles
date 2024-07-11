@@ -26,7 +26,10 @@ struct Cli {
 enum Commands {
     /// does testing things
     Run(RunArgs),
-    PrintProgenitor,
+    PrintProgenitor {
+        #[args(long)]
+        timeout_secs: Option<u32>,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -37,7 +40,7 @@ fn main() -> anyhow::Result<()> {
         Commands::PrintProgenitor => {
             let runtime = Runtime::new()?;
             let result: anyhow::Result<()> = runtime.block_on(async move {
-                let config = get_config(&args.workdir)?;
+                let config = wait_for_config(&args.workdir, args.timeout_secs)?;
                 let admin_ws =
                     AdminWebsocket::connect((Ipv4Addr::LOCALHOST, config.admin_port)).await?;
 

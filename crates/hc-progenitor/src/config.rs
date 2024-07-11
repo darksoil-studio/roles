@@ -16,18 +16,26 @@ pub struct Config {
     pub progenitor_app_id: String,
 }
 
-pub fn get_config(workdir: &PathBuf) -> anyhow::Result<Config> {
+pub fn get_config(workdir: &PathBuf) -> anyhow::Result<Option<Config>> {
     let config_file = config_file_path(workdir);
+    if !config_file.exists() {
+        return Ok(None);
+    }
+    let s = fs::read_to_string(config_file)?;
+    let config: Config = serde_yaml::from_str(s.as_str())?;
+    Ok(Some(config))
+}
+
+pub fn wait_for_config(workdir: &PathBuf, timeout_secs: Option<u32>) -> anyhow::Result<Config> {
     let start = SystemTime::now();
 
     loop {
-        if config_file.exists() {
-            let s = fs::read_to_string(config_file)?;
-            let config: Config = serde_yaml::from_str(s.as_str())?;
+        if let Some(config) = get_config(workdir)? {
             return Ok(config);
         }
         let elapsed = SystemTime::now().duration_since(start)?;
-        if elapsed.as_secs() > 30 {
+        let timeout = timeout_secs.unwrap_or(10);
+        if elapsed.as_secs() > timeout {
             return Err(anyhow!("Timed out waiting for the progenitor to be run: run `hc progenitor run` in another terminal and then run other commands in another window"));
         }
         std::thread::sleep(Duration::from_millis(200))

@@ -37,6 +37,10 @@ importers:
         version: 7.15.0(eslint@8.57.0)(typescript@5.5.3)
 
   docs:
+    dependencies:
+      dayjs:
+        specifier: ^1.11.11
+        version: 1.11.11
     devDependencies:
       '@api-viewer/demo':
         specifier: 1.0.0-pre.10

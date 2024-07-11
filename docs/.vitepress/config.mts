@@ -3,8 +3,8 @@ import { withMermaid } from 'vitepress-plugin-mermaid';
 
 // https://vitepress.dev/reference/site-config
 // Uncomment this to enable mermaid inside your site when this is solved: https://github.com/mermaid-js/mermaid/issues/4320
-// export default withMermaid({
-export default {
+export default withMermaid({
+// export default {
 	vue: {
 		template: {
 			compilerOptions: {
@@ -21,6 +21,7 @@ export default {
 	base: '/roles',
 	title: '@darksoil-studio/roles',
 	description: 'Roles zome for holochain apps',
+  // srcExclude: ['public/**/*'],
 	themeConfig: {
 		// https://vitepress.dev/reference/default-theme-config
 

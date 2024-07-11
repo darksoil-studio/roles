@@ -27,7 +27,7 @@ pub fn get_config(workdir: &PathBuf) -> anyhow::Result<Config> {
             return Ok(config);
         }
         let elapsed = SystemTime::now().duration_since(start)?;
-        if elapsed.as_secs() > 10 {
+        if elapsed.as_secs() > 30 {
             return Err(anyhow!("Timed out waiting for the progenitor to be run: run `hc progenitor run` in another terminal and then run other commands in another window"));
         }
         std::thread::sleep(Duration::from_millis(200))

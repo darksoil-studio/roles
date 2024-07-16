@@ -98,8 +98,10 @@ export class RolesZomeMock extends ZomeMock implements AppClient {
 		const records: Record[] = Array.from(this.roleClaims.values()).map(
 			r => r.revisions[r.revisions.length - 1],
 		);
+		const base = await fakeEntryHash();
 		return Promise.all(
 			records.map(async record => ({
+				base,
 				target: record.signed_action.hashed.hash,
 				author: record.signed_action.hashed.content.author,
 				timestamp: record.signed_action.hashed.content.timestamp,

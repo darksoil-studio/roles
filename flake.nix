@@ -12,7 +12,7 @@ rec {
 
     hc-infra.url = "github:holochain-open-dev/infrastructure";
     crane.follows = "hc-infra/crane";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/develop";
     scaffolding.url = "github:holochain-open-dev/templates";
 
     profiles.url = "github:holochain-open-dev/profiles/nixify";

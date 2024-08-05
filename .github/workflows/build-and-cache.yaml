@@ -34,18 +34,18 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
-          nix build --accept-flake-config  -L .#roles_integrity
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config  -L .#roles_integrity
           cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles_integrity)
           cachix pin darksoil-studio roles_integrity_debug $(nix path-info --accept-flake-config .#roles_integrity)
 
-          nix build --accept-flake-config  -L .#roles_integrity.meta.release
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config  -L .#roles_integrity.meta.release
           cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles_integrity)
           cachix pin darksoil-studio roles_integrity $(nix path-info --accept-flake-config .#roles_integrity.meta.release)
 
-          nix build --accept-flake-config  -L .#roles
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config  -L .#roles
           cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles)
           cachix pin darksoil-studio roles_debug $(nix path-info --accept-flake-config .#roles)
 
-          nix build --accept-flake-config  -L .#roles.meta.release
+          cachix watch-exec darksoil-studio -- nix build --accept-flake-config  -L .#roles.meta.release
           cachix push darksoil-studio $(nix path-info --accept-flake-config .#roles.meta.release)
           cachix pin darksoil-studio roles $(nix path-info --accept-flake-config .#roles.meta.release)

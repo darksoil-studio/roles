@@ -142,7 +142,6 @@ async function waitUntil(condition: () => Promise<boolean>, timeout: number) {
 test('Admin can assign admin that assigns a role', async () => {
 	await runScenario(async scenario => {
 		const { alice, bob, carol } = await setup(scenario);
-
 		let roles = alice.store.allRoles;
 		assert.equal(roles.length, 2);
 		assert.equal(roles[0], 'admin');

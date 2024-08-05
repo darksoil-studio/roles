@@ -56,7 +56,6 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 			'query_undeleted_role_claims_for_role',
 			role,
 		);
-		console.log('aaa', records);
 		return (records ? records : []).map(r => new EntryRecord(r));
 	}
 

@@ -3,15 +3,22 @@ import {
 	AsyncSignal,
 	JoinAsyncOptions,
 	Signal,
+	createLinkToLink,
 	joinAsync,
+	sortLinksByTimestampAscending,
+	uniquifyLinks,
 } from '@holochain-open-dev/signals';
 import {
 	ActionCommittedSignal,
 	EntryRecord,
 	GetonlyMap,
+	HashType,
+	LinkTypeForSignal,
 	ZomeClient,
+	getHashType,
+	retype,
 } from '@holochain-open-dev/utils';
-import { HoloHash } from '@holochain/client';
+import { HoloHash, Link } from '@holochain/client';
 import { encode } from '@msgpack/msgpack';
 
 export function mapValues<K extends string, V, U>(

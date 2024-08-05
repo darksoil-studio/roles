@@ -9,7 +9,7 @@ edition = "2021"
 tauri = "2.0.0-rc"
 tauri-plugin-log = "2.0.0-rc"
 
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "main" }
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "develop" }
 holochain_types = "0.3.2"
 holochain_client = "0.5.1"
 

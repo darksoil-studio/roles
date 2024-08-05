@@ -27,7 +27,7 @@ export class RolesForAgent extends SignalWatcher(LitElement) {
 	}
 
 	renderRoles(roles: string[]) {
-		return html`<div class="row" part="roles-container" style="gap: 4px;">
+		return html`<div class="row" part="body" style="gap: 4px;">
 			${roles.map(
 				role => html`<sl-tag>${this.roleSingularName(role)}</sl-tag>`,
 			)}

@@ -42,7 +42,7 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 
 	getAllDeletesForRoleClaim(
 		originalRoleClaimHash: ActionHash,
-	): Promise<Array<SignedActionHashed<Delete>>> {
+	): Promise<Array<SignedActionHashed<Delete>> | undefined> {
 		return this.callZome(
 			'get_all_deletes_for_role_claim',
 			originalRoleClaimHash,
@@ -56,7 +56,8 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 			'query_undeleted_role_claims_for_role',
 			role,
 		);
-		return records.map(r => new EntryRecord(r));
+		console.log('aaa', records);
+		return (records ? records : []).map(r => new EntryRecord(r));
 	}
 
 	/** All Roles */

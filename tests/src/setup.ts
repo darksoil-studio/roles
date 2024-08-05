@@ -30,9 +30,10 @@ export function patchCallZome(appWs: AppWebsocket) {
 
 	appWs.callZome = async req => {
 		try {
-			return callZome(req);
+			const result = await callZome(req);
+			return result;
 		} catch (e) {
-			if (!e.toString().includes('Socket not open')) {
+			if (!e.toString().includes('Socket is not open')) {
 				throw e;
 			}
 		}
@@ -71,7 +72,7 @@ export async function setup(scenario: Scenario) {
 	const alice: AgentApp = await enableAndGetAgentApp(
 		aliceConductor.adminWs(),
 		appWs,
-		appInfo
+		appInfo,
 	);
 	// Add 2 players with the test hApp to the Scenario. The returned players
 	// can be destructured.
@@ -83,7 +84,7 @@ export async function setup(scenario: Scenario) {
 	await aliceConductor
 		.adminWs()
 		.authorizeSigningCredentials(
-			(Object.values(appInfo.cell_info)[0][0] as any).provisioned.cell_id
+			(Object.values(appInfo.cell_info)[0][0] as any).provisioned.cell_id,
 		);
 
 	await bob.conductor
@@ -107,7 +108,7 @@ export async function setup(scenario: Scenario) {
 
 	const aliceStore = new RolesStore(
 		new RolesClient(appWs as any, 'roles_test', 'roles'),
-		config
+		config,
 	);
 
 	patchCallZome(bob.appWs as AppWebsocket);
@@ -115,12 +116,12 @@ export async function setup(scenario: Scenario) {
 
 	const bobStore = new RolesStore(
 		new RolesClient(bob.appWs as any, 'roles_test', 'roles'),
-		config
+		config,
 	);
 
 	const carolStore = new RolesStore(
 		new RolesClient(carol.appWs as any, 'roles_test', 'roles'),
-		config
+		config,
 	);
 
 	// Shortcut peer discovery through gossip and register all agents in every

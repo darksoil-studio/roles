@@ -381,7 +381,7 @@
               "name": "getAllDeletesForRoleClaim",
               "return": {
                 "type": {
-                  "text": "Promise<Array<SignedActionHashed<Delete>>>"
+                  "text": "Promise<Array<SignedActionHashed<Delete>> | undefined>"
                 }
               },
               "parameters": [
@@ -722,7 +722,7 @@
             {
               "name": "entry_type",
               "type": {
-                "text": "String"
+                "text": "string"
               }
             },
             {

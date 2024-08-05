@@ -3,7 +3,8 @@ import { withMermaid } from 'vitepress-plugin-mermaid';
 
 // https://vitepress.dev/reference/site-config
 // Uncomment this to enable mermaid inside your site when this is solved: https://github.com/mermaid-js/mermaid/issues/4320
-export default withMermaid({
+// export default withMermaid({
+export default {
 	// export default {
 	vue: {
 		template: {
@@ -11,11 +12,6 @@ export default withMermaid({
 				// treat all tags with a dash as custom elements
 				isCustomElement: tag => tag.includes('-'),
 			},
-		},
-	},
-	vite: {
-		optimizeDeps: {
-			include: ['mermaid'],
 		},
 	},
 	base: '/roles',
@@ -99,4 +95,4 @@ export default withMermaid({
         `,
 		],
 	],
-});
+};

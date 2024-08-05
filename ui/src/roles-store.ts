@@ -406,12 +406,12 @@ export class RolesStore {
 // This function would usually live in a library/framework, not application code
 let pending = false;
 
-let w = new Signal.subtle.Watcher(() => {
+const w = new Signal.subtle.Watcher(() => {
 	if (!pending) {
 		pending = true;
 		queueMicrotask(() => {
 			pending = false;
-			for (let s of w.getPending()) s.get();
+			for (const s of w.getPending()) s.get();
 			w.watch();
 		});
 	}
@@ -422,7 +422,7 @@ let w = new Signal.subtle.Watcher(() => {
 // itself on the microtask queue whenever one of its dependencies might change
 function effect(cb: any) {
 	let destructor: any;
-	let c = new Signal.Computed(() => {
+	const c = new Signal.Computed(() => {
 		if (typeof destructor === 'function') {
 			destructor();
 		}

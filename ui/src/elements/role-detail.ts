@@ -228,7 +228,7 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 					)}
 					.loading=${this.committing}
 					@click=${() => {
-						let agents = (
+						const agents = (
 							this.shadowRoot?.getElementById(
 								`search-agents-${roleConfig.role}`,
 							) as SearchAgents
@@ -300,7 +300,7 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 		if (myRoles.status !== 'completed') return myRoles;
 		const iAmAdmin = myRoles.value.includes(adminRoleConfig.role);
 		return {
-			status: 'completed' as 'completed',
+			status: 'completed' as const,
 			value: {
 				assignees: assignees.value,
 				iAmAdmin,

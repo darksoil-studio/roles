@@ -89,7 +89,7 @@ export function queryLiveEntriesSignal<
 >(
 	client: ZomeClient<S>,
 	queryEntries: () => Promise<Array<EntryRecord<T>>>,
-	entry_type: String,
+	entry_type: string,
 	pollIntervalMs: number = 20_000,
 ): AsyncSignal<Array<EntryRecord<T>>> {
 	let active = false;

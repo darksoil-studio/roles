@@ -722,7 +722,7 @@
             {
               "name": "entry_type",
               "type": {
-                "text": "String"
+                "text": "string"
               }
             },
             {

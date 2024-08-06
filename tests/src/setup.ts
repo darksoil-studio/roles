@@ -33,7 +33,10 @@ export function patchCallZome(appWs: AppWebsocket) {
 			const result = await callZome(req);
 			return result;
 		} catch (e) {
-			if (!e.toString().includes('Socket is not open')) {
+			if (
+				!e.toString().includes('Socket is not open') &&
+				!e.toString().includes('ClientClosedWithPendingRequests')
+			) {
 				throw e;
 			}
 		}

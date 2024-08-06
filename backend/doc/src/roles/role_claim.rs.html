@@ -60,16 +60,35 @@
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
 <a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
+<span class="kw">use </span><span class="kw">crate</span>::utils::create_relaxed;
+
 <span class="attr">#[hdk_extern]
-</span><span class="kw">pub fn </span>create_role_claim(role_claim: RoleClaim) -&gt; ExternResult&lt;Record&gt; {
-    <span class="kw">let </span>role_claim_hash = create_entry(<span class="kw-2">&amp;</span>EntryTypes::RoleClaim(role_claim.clone()))<span class="question-mark">?</span>;
-    <span class="kw">let </span>record = get(role_claim_hash.clone(), GetOptions::default())<span class="question-mark">?</span>.ok_or(<span class="macro">wasm_error!</span>(
-        WasmErrorInner::Guest(<span class="string">"Could not find the newly created RoleClaim"</span>.to_string())
-    ))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(record)
+</span><span class="kw">pub fn </span>create_role_claim(role_claim: RoleClaim) -&gt; ExternResult&lt;()&gt; {
+    create_relaxed(EntryTypes::RoleClaim(role_claim.clone()))<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attr">#[hdk_extern]
@@ -86,7 +105,44 @@
 }
 
 <span class="attr">#[hdk_extern]
-</span><span class="kw">pub fn </span>delete_role_claim(original_role_claim_hash: ActionHash) -&gt; ExternResult&lt;ActionHash&gt; {
+</span><span class="kw">pub fn </span>query_undeleted_role_claims_for_role(role: String) -&gt; ExternResult&lt;Vec&lt;Record&gt;&gt; {
+    <span class="kw">let </span>filter = ChainQueryFilter::new()
+        .entry_type(UnitEntryTypes::RoleClaim.try_into()<span class="question-mark">?</span>)
+        .include_entries(<span class="bool-val">true</span>)
+        .action_type(ActionType::Create);
+    <span class="kw">let </span>records = query(filter)<span class="question-mark">?</span>;
+    <span class="kw">let </span>filter = ChainQueryFilter::new().action_type(ActionType::Delete);
+    <span class="kw">let </span>delete_records = query(filter)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>all_deleted_hashes = delete_records
+        .into_iter()
+        .map(|r| <span class="kw">match </span>r.action() {
+            Action::Delete(d) =&gt; <span class="prelude-val">Ok</span>(d.deletes_address.clone()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">wasm_error!</span>(WasmErrorInner::Guest(String::from(
+                <span class="string">"Invalid Delete action"
+            </span>)))),
+        })
+        .collect::&lt;ExternResult&lt;Vec&lt;ActionHash&gt;&gt;&gt;()<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>undeleted_records: Vec&lt;Record&gt; = records
+        .into_iter()
+        .filter(|r| !all_deleted_hashes.contains(r.action_address()))
+        .collect();
+
+    <span class="kw">let </span>records_for_role = undeleted_records
+        .into_iter()
+        .filter(|r| {
+            <span class="kw">let </span><span class="prelude-val">Ok</span>(role_claim) = RoleClaim::try_from(r) <span class="kw">else </span>{
+                <span class="kw">return </span><span class="bool-val">false</span>;
+            };
+            role_claim.role.eq(<span class="kw-2">&amp;</span>role)
+        })
+        .collect();
+
+    <span class="prelude-val">Ok</span>(records_for_role)
+}
+
+<span class="kw">pub fn </span>delete_role_claim(original_role_claim_hash: ActionHash) -&gt; ExternResult&lt;ActionHash&gt; {
     delete_entry(original_role_claim_hash)
 }
 
@@ -103,21 +159,5 @@
         ))),
         Details::Record(record_details) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(record_details.deletes)),
     }
-}
-
-<span class="attr">#[hdk_extern]
-</span><span class="kw">pub fn </span>get_oldest_delete_for_role_claim(
-    original_role_claim_hash: ActionHash,
-) -&gt; ExternResult&lt;<span class="prelude-ty">Option</span>&lt;SignedActionHashed&gt;&gt; {
-    <span class="kw">let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>deletes) = get_all_deletes_for_role_claim(original_role_claim_hash)<span class="question-mark">? </span><span class="kw">else </span>{
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
-    };
-    deletes.sort_by(|delete_a, delete_b| {
-        delete_a
-            .action()
-            .timestamp()
-            .cmp(<span class="kw-2">&amp;</span>delete_b.action().timestamp())
-    });
-    <span class="prelude-val">Ok</span>(deletes.first().cloned())
 }
 </code></pre></div></section></main></body></html>

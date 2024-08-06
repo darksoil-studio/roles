@@ -1,0 +1,10 @@
+/home/runner/work/roles/roles/docs/public/backend/release/deps/libmdns-0cd2364e494e9637.rmeta: /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/lib.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/discover.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/resolve.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/errors.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/mdns.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/response.rs
+
+/home/runner/work/roles/roles/docs/public/backend/release/deps/mdns-0cd2364e494e9637.d: /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/lib.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/discover.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/resolve.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/errors.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/mdns.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/response.rs
+
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/lib.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/discover.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/resolve.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/errors.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/mdns.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/mdns-3.0.0/src/response.rs:

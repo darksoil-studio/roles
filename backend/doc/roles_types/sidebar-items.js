@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["validate_agent_had_undeleted_role_claim_at_the_time","validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index"],"struct":["Properties","RoleClaim"]};

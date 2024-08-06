@@ -147,25 +147,29 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>assignees::{assign_role, AssignRoleInput};
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>assignees::assign_role_to_single_agent;
 <span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>role_claim::create_role_claim;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
-<span class="kw">pub mod </span>all_roles;
 <span class="kw">pub mod </span>assignees;
 <span class="kw">pub mod </span>role_claim;
+<span class="kw">pub mod </span>utils;
 
 <span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>init(<span class="kw">_</span>: ()) -&gt; ExternResult&lt;InitCallbackResult&gt; {
     <span class="comment">// If I'm a progenitor, automatically claim the admin role
-
     </span><span class="kw">let </span>agent_info = agent_info()<span class="question-mark">?</span>;
     <span class="kw">let </span>progenitors = progenitors(())<span class="question-mark">?</span>;
 
     <span class="kw">if </span>progenitors.contains(<span class="kw-2">&amp;</span>agent_info.agent_initial_pubkey) {
-        assign_role(AssignRoleInput {
-            assignee: agent_info.agent_initial_pubkey,
+        <span class="kw">let </span>create_link_action_hash =
+            assign_role_to_single_agent(ADMIN_ROLE.to_string(), agent_info.agent_initial_pubkey)<span class="question-mark">?</span>;
+        create_role_claim(RoleClaim {
             role: ADMIN_ROLE.to_string(),
+            assign_role_create_link_hash: create_link_action_hash,
         })<span class="question-mark">?</span>;
     }
 

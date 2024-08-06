@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["assign_role","get_assignees_for_role","request_unassign_role"],"struct":["AssignRoleInput"],"type":["RequestUnassignRoleInput"]};
+window.SIDEBAR_ITEMS = {"fn":["assign_role","assign_role_to_single_agent","get_assignees_for_role","get_pending_unassignments","request_unassign_role","unassign_my_role"],"struct":["AssignRoleInput","RequestUnassignRoleInput"]};

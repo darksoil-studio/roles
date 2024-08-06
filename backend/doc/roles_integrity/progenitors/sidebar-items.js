@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["progenitors"],"struct":["Properties"]};
+window.SIDEBAR_ITEMS = {"fn":["progenitors"]};

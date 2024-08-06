@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["validate_create_link_role_to_assignee","validate_delete_link_role_to_assignee"]};
+window.SIDEBAR_ITEMS = {"fn":["validate_create_link_pending_unassignments","validate_create_link_role_to_assignee","validate_delete_link_pending_unassigments","validate_delete_link_role_to_assignee"]};

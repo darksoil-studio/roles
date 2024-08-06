@@ -1,1 +1,0 @@
-import{_ as s,o as i,c as t,a3 as a}from"./chunks/framework.CsKJitAv.js";const E=JSON.parse('{"title":"Setup","description":"","frontmatter":{},"headers":[],"relativePath":"setup.md","filePath":"setup.md"}'),e={name:"setup.md"},l=a("",33),n=[l];function h(p,o,k,r,d,g){return i(),t("div",null,n)}const y=s(e,[["render",h]]);export{E as __pageData,y as default};

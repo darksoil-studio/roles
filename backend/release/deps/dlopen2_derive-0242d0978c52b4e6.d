@@ -1,0 +1,9 @@
+/home/runner/work/roles/roles/docs/public/backend/release/deps/libdlopen2_derive-0242d0978c52b4e6.so: /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/lib.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/api.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/common.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/multi_api.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/wrapper.rs
+
+/home/runner/work/roles/roles/docs/public/backend/release/deps/dlopen2_derive-0242d0978c52b4e6.d: /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/lib.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/api.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/common.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/multi_api.rs /home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/wrapper.rs
+
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/lib.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/api.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/common.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/multi_api.rs:
+/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/dlopen2_derive-0.4.0/src/wrapper.rs:

@@ -1,0 +1,4 @@
+cargo:rerun-if-changed=go.mod
+cargo:rerun-if-changed=go.sum
+cargo:rerun-if-changed=main.go
+cargo:rerun-if-changed=vendor.zip

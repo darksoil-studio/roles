@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EntryTypes","UnitEntryTypes"],"fn":["__num_entry_types","action_hash","entry_defs","validate","validate_create_example"],"struct":["ExampleEntry"]};

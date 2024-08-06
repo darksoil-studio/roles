@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["ADMIN_ROLE"],"fn":["was_admin_at_the_time"]};
+window.SIDEBAR_ITEMS = {"constant":["ADMIN_ROLE"],"fn":["validate_agent_was_admin_at_the_time"]};

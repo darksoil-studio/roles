@@ -2,10 +2,16 @@ name: "Build and cache nix packages"
 on:
   push: 
     branches: [ main ]
+  pull_request: 
+    branches: [ main ]
 
 jobs:
   build-and-cache-nix-packages:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
@@ -30,7 +36,7 @@ jobs:
         run: |
           nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"
 
-      - name: Build zomes
+      - name: Build debug zomes
         env:
           CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
         run: |
@@ -38,13 +44,18 @@ jobs:
           cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity | nix run nixpkgs#jq -- -r '.[].path')
           cachix pin darksoil-studio roles_integrity_debug $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity | nix run nixpkgs#jq -- -r '.[].path')
 
-          cachix watch-exec darksoil-studio -- nix build --no-update-lock-file --accept-flake-config -L .#roles_integrity.meta.release
-          cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity.meta.release | nix run nixpkgs#jq -- -r '.[].path')
-          cachix pin darksoil-studio roles_integrity $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity.meta.release | nix run nixpkgs#jq -- -r '.[].path')
-
           cachix watch-exec darksoil-studio -- nix build --no-update-lock-file --accept-flake-config -L .#roles
           cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles | nix run nixpkgs#jq -- -r '.[].path')
           cachix pin darksoil-studio roles_debug $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles | nix run nixpkgs#jq -- -r '.[].path')
+
+      - name: Build release zomes
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          CACHIX_AUTH_TOKEN: "${{ secrets.DARKSOIL_CACHIX_AUTH_TOKEN }}"
+        run: |
+          cachix watch-exec darksoil-studio -- nix build --no-update-lock-file --accept-flake-config -L .#roles_integrity.meta.release
+          cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity.meta.release | nix run nixpkgs#jq -- -r '.[].path')
+          cachix pin darksoil-studio roles_integrity $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles_integrity.meta.release | nix run nixpkgs#jq -- -r '.[].path')
 
           cachix watch-exec darksoil-studio -- nix build --no-update-lock-file --accept-flake-config -L .#roles.meta.release
           cachix push darksoil-studio $(nix path-info --json --accept-flake-config --no-warn-dirty .#roles.meta.release | nix run nixpkgs#jq -- -r '.[].path')

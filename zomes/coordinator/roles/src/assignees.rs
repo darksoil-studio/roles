@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use roles_integrity::*;
 
 use crate::{
-    role_claim::query_undeleted_role_claims_for_role,
+    role_claim::{create_role_claim, query_undeleted_role_claims_for_role},
     utils::{delete_link_relaxed, delete_relaxed},
 };
 
@@ -39,12 +39,19 @@ pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     path.ensure()?;
 
     for assignee in input.assignees {
-        create_link(
+        let assign_role_create_link_hash = create_link(
             path.path_entry_hash()?,
-            assignee,
+            assignee.clone(),
             LinkTypes::RoleToAssignee,
             input.role.clone(),
         )?;
+        let agent_info = agent_info()?;
+        if assignee.eq(&agent_info.agent_latest_pubkey) {
+            create_role_claim(RoleClaim {
+                role: input.role.clone(),
+                assign_role_create_link_hash,
+            })?;
+        }
     }
     Ok(())
 }

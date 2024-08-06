@@ -32,7 +32,7 @@
     "@holochain/client": "^0.17.1",
     "@holochain-open-dev/elements": "^0.300.1",
     "@holochain-open-dev/profiles": "github:holochain-open-dev/profiles#6a73e9dbf42c4522c135a237108fa42fb7cb3dc5&path:ui",
-    "@darksoil-studio/notifications": "github:darksoil-studio/notifications#2e4f4ec3b887808e65a463c70efeae0819f13630&path:ui",
+    "@darksoil-studio/notifications": "github:darksoil-studio/notifications#63d07c9f453faa0690ef642c0e98101af36bf746&path:ui",
     "@holochain-open-dev/signals": "^0.300.7",
     "@holochain-open-dev/utils": "^0.300.2",
     "@lit/context": "^1.0.0",

@@ -1,10 +1,10 @@
 cargo:rerun-if-changed=./build.rs
 cargo:rerun-if-changed=./Cargo.toml
 cargo:rerun-if-env-changed=FIX_SQL_FMT
-cargo:rerun-if-changed=./src/sql/select_version.sql
 cargo:rerun-if-changed=./src/sql/insert_seed.sql
-cargo:rerun-if-changed=./src/sql/select_by_tag.sql
-cargo:rerun-if-changed=./src/sql/insert.sql
-cargo:rerun-if-changed=./src/sql/schema.sql
+cargo:rerun-if-changed=./src/sql/select_version.sql
 cargo:rerun-if-changed=./src/sql/select_all.sql
 cargo:rerun-if-changed=./src/sql/select_by_sign_pk.sql
+cargo:rerun-if-changed=./src/sql/schema.sql
+cargo:rerun-if-changed=./src/sql/insert.sql
+cargo:rerun-if-changed=./src/sql/select_by_tag.sql

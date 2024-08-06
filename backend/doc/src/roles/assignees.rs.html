@@ -137,11 +137,18 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
 <span class="kw">use crate</span>::{
-    role_claim::query_undeleted_role_claims_for_role,
+    role_claim::{create_role_claim, query_undeleted_role_claims_for_role},
     utils::{delete_link_relaxed, delete_relaxed},
 };
 
@@ -178,12 +185,19 @@
     path.ensure()<span class="question-mark">?</span>;
 
     <span class="kw">for </span>assignee <span class="kw">in </span>input.assignees {
-        create_link(
+        <span class="kw">let </span>assign_role_create_link_hash = create_link(
             path.path_entry_hash()<span class="question-mark">?</span>,
-            assignee,
+            assignee.clone(),
             LinkTypes::RoleToAssignee,
             input.role.clone(),
         )<span class="question-mark">?</span>;
+        <span class="kw">let </span>agent_info = agent_info()<span class="question-mark">?</span>;
+        <span class="kw">if </span>assignee.eq(<span class="kw-2">&amp;</span>agent_info.agent_latest_pubkey) {
+            create_role_claim(RoleClaim {
+                role: input.role.clone(),
+                assign_role_create_link_hash,
+            })<span class="question-mark">?</span>;
+        }
     }
     <span class="prelude-val">Ok</span>(())
 }

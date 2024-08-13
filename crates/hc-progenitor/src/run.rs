@@ -35,11 +35,11 @@ pub struct RunArgs {
 
     /// The bundle identifier for the Tauri app
     #[clap(long)]
-    pub signal_url: String,
+    pub signal_url: Option<String>,
 
     /// The bundle identifier for the Tauri app
     #[clap(long)]
-    pub bootstrap_url: String,
+    pub bootstrap_url: Option<String>,
 }
 
 pub fn run(workdir: PathBuf, args: RunArgs) {
@@ -50,6 +50,20 @@ pub fn run(workdir: PathBuf, args: RunArgs) {
     let mut context: Context<Wry> = tauri::generate_context!();
     context.config_mut().build.dev_url = Some(dev_url.into());
 
+    let wan_network_config = match (args.signal_url, args.bootstrap_url) {
+        (Some(signal_url), Some(bootstrap_url)) => Some(WANNetworkConfig {
+            signal_url: url2!("{}", signal_url),
+            bootstrap_url: url2!("{}", bootstrap_url),
+        }),
+        (None, None) => None,
+        (Some(_), None) => {
+            panic!("Invalid arguments: --signal-url was provided without --bootstrap-url")
+        }
+        (None, Some(_)) => {
+            panic!("Invalid arguments: --bootstrap-url was provided without --signal-url")
+        }
+    };
+
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -59,8 +73,7 @@ pub fn run(workdir: PathBuf, args: RunArgs) {
         .plugin(tauri_plugin_holochain::init(
             vec![].into(),
             HolochainPluginConfig {
-                signal_url: url2!("{}", args.signal_url),
-                bootstrap_url: url2!("{}", args.bootstrap_url),
+                wan_network_config,
                 holochain_dir: conductor_dir,
             },
         ))

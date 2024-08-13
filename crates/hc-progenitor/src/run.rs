@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::{AppHandle, Context, Wry};
-use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig};
+use tauri_plugin_holochain::{HolochainExt, HolochainPluginConfig, WANNetworkConfig};
 use url2::url2;
 
 use crate::{config_file_path, Config};

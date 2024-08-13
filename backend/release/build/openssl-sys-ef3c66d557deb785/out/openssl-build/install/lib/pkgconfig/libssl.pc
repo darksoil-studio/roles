@@ -1,9 +1,0 @@
-libdir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ef3c66d557deb785/out/openssl-build/install/lib
-includedir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ef3c66d557deb785/out/openssl-build/install/include
-
-Name: OpenSSL-libssl
-Description: Secure Sockets Layer and cryptography libraries
-Version: 3.3.1
-Requires.private: libcrypto
-Libs: -L${libdir} -lssl
-Cflags: -I${includedir}

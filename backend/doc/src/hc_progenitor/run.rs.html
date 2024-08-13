@@ -184,6 +184,19 @@
 <a href="#182" id="182">182</a>
 <a href="#183" id="183">183</a>
 <a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::anyhow;
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>holochain_client::{AgentPubKey, AppInfo};
@@ -221,11 +234,11 @@
 
     <span class="doccomment">/// The bundle identifier for the Tauri app
     </span><span class="attr">#[clap(long)]
-    </span><span class="kw">pub </span>signal_url: String,
+    </span><span class="kw">pub </span>signal_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// The bundle identifier for the Tauri app
     </span><span class="attr">#[clap(long)]
-    </span><span class="kw">pub </span>bootstrap_url: String,
+    </span><span class="kw">pub </span>bootstrap_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="kw">pub fn </span>run(workdir: PathBuf, args: RunArgs) {
@@ -236,6 +249,20 @@
     <span class="kw">let </span><span class="kw-2">mut </span>context: Context&lt;Wry&gt; = <span class="macro">tauri::generate_context!</span>();
     context.config_mut().build.dev_url = <span class="prelude-val">Some</span>(dev_url.into());
 
+    <span class="kw">let </span>wan_network_config = <span class="kw">match </span>(args.signal_url, args.bootstrap_url) {
+        (<span class="prelude-val">Some</span>(signal_url), <span class="prelude-val">Some</span>(bootstrap_url)) =&gt; <span class="prelude-val">Some</span>(WANNetworkConfig {
+            signal_url: <span class="macro">url2!</span>(<span class="string">"{}"</span>, signal_url),
+            bootstrap_url: <span class="macro">url2!</span>(<span class="string">"{}"</span>, bootstrap_url),
+        }),
+        (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
+        (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) =&gt; {
+            <span class="macro">panic!</span>(<span class="string">"Invalid arguments: --signal-url was provided without --bootstrap-url"</span>)
+        }
+        (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; {
+            <span class="macro">panic!</span>(<span class="string">"Invalid arguments: --bootstrap-url was provided without --signal-url"</span>)
+        }
+    };
+
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -245,8 +272,7 @@
         .plugin(tauri_plugin_holochain::init(
             <span class="macro">vec!</span>[].into(),
             HolochainPluginConfig {
-                signal_url: <span class="macro">url2!</span>(<span class="string">"{}"</span>, args.signal_url),
-                bootstrap_url: <span class="macro">url2!</span>(<span class="string">"{}"</span>, args.bootstrap_url),
+                wan_network_config,
                 holochain_dir: conductor_dir,
             },
         ))

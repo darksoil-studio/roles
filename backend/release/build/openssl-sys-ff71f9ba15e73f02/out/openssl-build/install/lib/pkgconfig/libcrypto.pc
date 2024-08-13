@@ -1,0 +1,11 @@
+libdir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ff71f9ba15e73f02/out/openssl-build/install/lib
+includedir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ff71f9ba15e73f02/out/openssl-build/install/include
+enginesdir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ff71f9ba15e73f02/out/openssl-build/install/lib/engines-3
+modulesdir=/home/runner/work/roles/roles/docs/public/backend/release/build/openssl-sys-ff71f9ba15e73f02/out/openssl-build/install/lib/ossl-modules
+
+Name: OpenSSL-libcrypto
+Description: OpenSSL cryptography library
+Version: 3.3.1
+Libs: -L${libdir} -lcrypto
+Libs.private: -ldl -pthread
+Cflags: -I${includedir}

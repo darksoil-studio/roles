@@ -1,0 +1,5 @@
+cargo:rerun-if-changed=permissions
+cargo:PERMISSION_FILES_PATH=/home/runner/work/roles/roles/docs/public/backend/release/build/tauri-plugin-holochain-c29fbd2f7ac6027b/out/tauri-plugin-holochain-permission-files
+cargo:rustc-check-cfg=cfg(mobile)
+cargo:rustc-check-cfg=cfg(desktop)
+cargo:rustc-cfg=desktop

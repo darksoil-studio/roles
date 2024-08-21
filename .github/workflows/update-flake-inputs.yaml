@@ -35,7 +35,7 @@ jobs:
       - name: Update Flake
         run: |
           nix flake update
-          nix develop
+          nix develop --command bash -c "echo \"This is here so that the sync-npm-git-dependencies-with-nix runs\""
 
       - uses: dorny/paths-filter@v3
         id: changes

@@ -36,4 +36,4 @@ jobs:
 
       - name: Install and test
         run: |
-          nix develop --accept-flake-config --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "pnpm i && pnpm t && pnpm -F @darksoil-studio/roles build"

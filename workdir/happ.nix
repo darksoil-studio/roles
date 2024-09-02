@@ -1,9 +1,9 @@
 { inputs, ... }:
 
 {
-  perSystem = { inputs', lib, self', ... }: {
+  perSystem = { inputs', lib, system, self', ... }: {
     packages.roles_test_happ = inputs.hc-infra.outputs.lib.happ {
-      holochain = inputs'.holochain;
+      inherit system;
       happManifest = ./happ.yaml;
 
       dnas = {

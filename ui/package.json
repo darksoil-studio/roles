@@ -31,8 +31,8 @@
   "dependencies": {
     "@holochain/client": "^0.17.1",
     "@holochain-open-dev/elements": "^0.300.1",
-    "@holochain-open-dev/profiles": "github:holochain-open-dev/profiles#112ac7c452d5a5c775a07a072c0ee14cb81c41ed&path:ui",
-    "@darksoil-studio/notifications": "github:darksoil-studio/notifications#832d1796c665c5ab572f0ed9c8b1054bd97a92c8&path:ui",
+    "@holochain-open-dev/profiles": "github:holochain-open-dev/profiles#6000dc6c04194429f2768517670366c411c4a03a&path:ui",
+    "@darksoil-studio/notifications": "github:darksoil-studio/notifications#d23ad31d94ad18a7bd140272102c78fca96365cc&path:ui",
     "@holochain-open-dev/signals": "^0.300.7",
     "@holochain-open-dev/utils": "^0.300.2",
     "@lit/context": "^1.0.0",

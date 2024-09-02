@@ -2,16 +2,12 @@ rec {
   description = "Template for Holochain app development";
 
   inputs = {
-    versions.url = "github:holochain/holochain?dir=versions/0_3";
-
-    holochain.url = "github:holochain/holochain";
-    holochain.inputs.versions.follows = "versions";
-
-    nixpkgs.follows = "holochain/nixpkgs";
-    flake-parts.follows = "holochain/flake-parts";
+    holonix.url = "github:holochain/holonix/main-0.3";
+    nixpkgs.follows = "holonix/nixpkgs";
+    flake-parts.follows = "holonix/flake-parts";
+    crane.follows = "holonix/crane";
 
     hc-infra.url = "github:holochain-open-dev/infrastructure";
-    crane.follows = "hc-infra/crane";
     p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard";
     scaffolding.url = "github:holochain-open-dev/templates";
 
@@ -63,7 +59,7 @@ rec {
           };
       };
 
-      systems = builtins.attrNames inputs.holochain.devShells;
+      systems = builtins.attrNames inputs.holonix.devShells;
       perSystem = { inputs', self', config, pkgs, system, ... }: {
 
         packages.network = (pkgs.callPackage flake.lib.progenitor-network { }) {
@@ -76,6 +72,7 @@ rec {
           inputsFrom = [
             inputs'.hc-infra.devShells.synchronized-pnpm
             inputs'.p2p-shipyard.devShells.holochainTauriDev
+            inputs'.holonix.devShells.default
           ];
 
           packages = [ inputs'.scaffolding.packages.hc-scaffold-zome-template ];

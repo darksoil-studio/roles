@@ -15,16 +15,13 @@
         src = (inputs.p2p-shipyard.lib.cleanTauriSource { inherit lib; })
           (craneLib.path ../../.);
         doCheck = false;
-        buildInputs = inputs.hc-infra.outputs.lib.holochainAppDeps.buildInputs {
-          inherit pkgs lib;
-        } ++ inputs.p2p-shipyard.lib.tauriAppDeps.buildInputs {
-          inherit pkgs lib;
-        };
+        buildInputs =
+          inputs.hc-infra.outputs.lib.holochainDeps { inherit pkgs lib; }
+          ++ inputs.p2p-shipyard.lib.tauriAppDeps.buildInputs {
+            inherit pkgs lib;
+          };
         nativeBuildInputs =
           (inputs.p2p-shipyard.lib.tauriAppDeps.nativeBuildInputs {
-            inherit pkgs lib;
-          })
-          ++ (inputs.hc-infra.outputs.lib.holochainAppDeps.nativeBuildInputs {
             inherit pkgs lib;
           });
         postPatch = ''

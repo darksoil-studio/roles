@@ -3,19 +3,19 @@
 {
   perSystem = { inputs', self', lib, system, ... }: {
     packages.roles_test_dna = inputs.hc-infra.outputs.lib.dna {
+      inherit system;
       dnaManifest = ./dna.yaml;
-      holochain = inputs'.holochain;
       zomes = let
         example = inputs.hc-infra.outputs.lib.rustZome {
           workspacePath = inputs.self.outPath;
-          holochain = inputs'.holochain;
+          inherit system;
           crateCargoToml = ../zomes/coordinator/example/Cargo.toml;
           cargoArtifacts =
             inputs.hc-infra.outputs.lib.zomeCargoArtifacts { inherit system; };
         };
         example_integrity = inputs.hc-infra.outputs.lib.rustZome {
           workspacePath = inputs.self.outPath;
-          holochain = inputs'.holochain;
+          inherit system;
           crateCargoToml = ../zomes/integrity/example/Cargo.toml;
           cargoArtifacts =
             inputs.hc-infra.outputs.lib.zomeCargoArtifacts { inherit system; };

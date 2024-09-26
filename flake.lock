@@ -2708,11 +2708,11 @@
         "scaffolding": "scaffolding"
       },
       "locked": {
-        "lastModified": 1727354757,
-        "narHash": "sha256-jPY2Mu6nQko6OxUChte5Tp1pP77mkcPZ3IrWX4nfeoA=",
+        "lastModified": 1727354845,
+        "narHash": "sha256-uXFCAfwbTPYN5PaF/5LoXt+fah0Kt4evBh9xHV3aIjk=",
         "owner": "darksoil-studio",
         "repo": "notifications",
-        "rev": "8545970012e43f108577d650ab12eb5aeef3f54f",
+        "rev": "d63a0eecbb29bcd47c4a9f5991a09105f8503e0f",
         "type": "github"
       },
       "original": {
@@ -2881,11 +2881,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1727353111,
-        "narHash": "sha256-Kd7iMk1y3WKGXHLpitDGoXS3BPAsJzaYdlPTsbNOdWs=",
+        "lastModified": 1727354551,
+        "narHash": "sha256-q7xnQJNJUsb6ujKU1T7XCv11CfeyGNFWIZYQZ0ssL4w=",
         "owner": "holochain-open-dev",
         "repo": "profiles",
-        "rev": "719e10d9cf6d4f97b587175fecaa7b6ee3bc836e",
+        "rev": "e04300c94df9d1821b2d03fdf9980611d935ec24",
         "type": "github"
       },
       "original": {

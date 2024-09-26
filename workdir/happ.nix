@@ -2,8 +2,7 @@
 
 {
   perSystem = { inputs', lib, system, self', ... }: {
-    packages.roles_test_happ = inputs.hc-infra.outputs.lib.happ {
-      inherit system;
+    packages.roles_test_happ = inputs.hc-infra.outputs.builders.${system}.happ {
       happManifest = ./happ.yaml;
 
       dnas = {

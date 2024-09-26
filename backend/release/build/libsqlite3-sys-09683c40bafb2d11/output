@@ -1,5 +1,5 @@
 cargo:rerun-if-env-changed=LIBSQLITE3_SYS_USE_PKG_CONFIG
-cargo:include=/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libsqlite3-sys-0.28.0/sqlcipher
+cargo:include=/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/libsqlite3-sys-0.28.0/sqlcipher
 cargo:rerun-if-changed=sqlcipher/sqlite3.c
 cargo:rerun-if-changed=sqlite3/wasm32-wasi-vfs.c
 cargo:rerun-if-env-changed=SQLITE_MAX_VARIABLE_NUMBER

@@ -1,6 +1,6 @@
 cargo:rerun-if-changed=permissions
 cargo:PERMISSION_FILES_PATH=/home/runner/work/roles/roles/docs/public/backend/release/build/tauri-plugin-log-aa6a4a3d326940f9/out/tauri-plugin-log-permission-files
-cargo:GLOBAL_API_SCRIPT_PATH=/home/runner/work/roles/roles/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-plugin-log-2.0.0-rc.0/api-iife.js
+cargo:GLOBAL_API_SCRIPT_PATH=/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-plugin-log-2.0.0-rc.0/api-iife.js
 cargo:rustc-check-cfg=cfg(mobile)
 cargo:rustc-check-cfg=cfg(desktop)
 cargo:rustc-cfg=desktop

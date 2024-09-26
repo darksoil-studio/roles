@@ -16,14 +16,9 @@
           (craneLib.path ../../.);
         doCheck = false;
         buildInputs =
-          inputs.hc-infra.outputs.lib.holochainDeps { inherit pkgs lib; }
-          ++ inputs.p2p-shipyard.lib.tauriAppDeps.buildInputs {
-            inherit pkgs lib;
-          };
+          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.buildInputs;
         nativeBuildInputs =
-          (inputs.p2p-shipyard.lib.tauriAppDeps.nativeBuildInputs {
-            inherit pkgs lib;
-          });
+          inputs.p2p-shipyard.outputs.dependencies.${system}.tauriHapp.nativeBuildInputs;
         postPatch = ''
           mkdir -p "$TMPDIR/nix-vendor"
           cp -Lr "$cargoVendorDir" -T "$TMPDIR/nix-vendor"

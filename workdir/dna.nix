@@ -2,24 +2,20 @@
 
 {
   perSystem = { inputs', self', lib, system, ... }: {
-    packages.roles_test_dna = inputs.hc-infra.outputs.lib.dna {
-      inherit system;
+    packages.roles_test_dna = inputs.hc-infra.outputs.builders.${system}.dna {
       dnaManifest = ./dna.yaml;
       zomes = let
-        example = inputs.hc-infra.outputs.lib.rustZome {
+        example = inputs.hc-infra.outputs.builders.${system}.rustZome {
           workspacePath = inputs.self.outPath;
-          inherit system;
           crateCargoToml = ../zomes/coordinator/example/Cargo.toml;
-          cargoArtifacts =
-            inputs.hc-infra.outputs.lib.zomeCargoArtifacts { inherit system; };
+          cargoArtifacts = inputs'.hc-infra.packages.zomeCargoArtifacts;
         };
-        example_integrity = inputs.hc-infra.outputs.lib.rustZome {
-          workspacePath = inputs.self.outPath;
-          inherit system;
-          crateCargoToml = ../zomes/integrity/example/Cargo.toml;
-          cargoArtifacts =
-            inputs.hc-infra.outputs.lib.zomeCargoArtifacts { inherit system; };
-        };
+        example_integrity =
+          inputs.hc-infra.outputs.builders.${system}.rustZome {
+            workspacePath = inputs.self.outPath;
+            crateCargoToml = ../zomes/integrity/example/Cargo.toml;
+            cargoArtifacts = inputs'.hc-infra.packages.zomeCargoArtifacts;
+          };
       in {
         inherit example example_integrity;
         # Include here the zome packages for this DNA, e.g.:

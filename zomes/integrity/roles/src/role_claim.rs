@@ -1,6 +1,8 @@
 use hdi::prelude::*;
 pub use roles_types::{validate_agent_had_undeleted_role_claim_at_the_time, RoleClaim};
 
+use crate::{role_path, LinkTypes};
+
 pub fn validate_create_role_claim(
     action: EntryCreationAction,
     role_claim: RoleClaim,
@@ -53,6 +55,71 @@ pub fn validate_create_role_claim(
             )));
         }
     }
+
+    // Get the CreateLink for the assign_role_create_link_hash, and verify it's a link from the role to the assignee
+
+    let create_link_hash = role_claim.assign_role_create_link_hash;
+
+    let record = must_get_valid_record(create_link_hash)?;
+
+    let link_action = record.action().clone();
+
+    let Action::CreateLink(create_link) = link_action.clone() else {
+        return Ok(ValidateCallbackResult::Invalid(format!("The assign_role_create_link_hash references a record that does not contain a CreateLink action")));
+    };
+
+    let base_address = create_link.base_address;
+
+    let Some(actual_base_entry_hash) = base_address.into_entry_hash() else {
+        return Ok(ValidateCallbackResult::Invalid(
+            "No entry hash associated with the base of the link".to_string(),
+        ));
+    };
+    let path = role_path(&role_claim.role)?;
+    let expected_role_path_entry_hash = path.path_entry_hash()?;
+
+    if expected_role_path_entry_hash.ne(&actual_base_entry_hash) {
+        return Ok(ValidateCallbackResult::Invalid(format!(
+            "The base for the assign_role link does not match the expected role path entry hash"
+        )));
+    }
+
+    let Some(link_type) = LinkTypes::from_type(create_link.zome_index, create_link.link_type)?
+    else {
+        return Ok(ValidateCallbackResult::Invalid(format!(
+            "Invalid LinkType: not a roles link type"
+        )));
+    };
+
+    let LinkTypes::RoleToAssignee = link_type else {
+        return Ok(ValidateCallbackResult::Invalid(format!(
+            "Assign role link is not of type RoleToAssignee"
+        )));
+    };
+
+    let Ok(role) = String::from_utf8(create_link.tag.0) else {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "RoleToAssignee links must contain the role in their LinkTag",
+        )));
+    };
+    if role.ne(&role_claim.role) {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "The tag of the RoleToAssignee link must be the same role as the role declared RoleClaim",
+        )));
+    }
+
+    let Some(assignee) = create_link.target_address.into_agent_pub_key() else {
+        return Ok(ValidateCallbackResult::Invalid(
+            "No action hash associated with link".to_string(),
+        ));
+    };
+
+    if assignee.ne(action.author()) {
+        return Ok(ValidateCallbackResult::Invalid(format!(
+            "The author of the RoleClaim is not the assignee for the AssignRole link"
+        )));
+    }
+
     Ok(ValidateCallbackResult::Valid)
 }
 

@@ -52,4 +52,4 @@ The possibility of actually using the capacities that an app developer is connec
 It is implemented in this way in order to be sure that when someone is evaluating if an action is allowed (through a role) from an Agent, that enabling role claim must be found earlier in the source chain of that Agent to become deterministic.
 
 ## Implementation considerations
-It is very important to understand that if you want to use this module, you need to instansiate your DNA that has these roles with a progenitor.......
+It is very important to understand that if you want to use this module, the instansiators AgentPubKey needs to be inserted into the [DNA properties](https://docs.rs/holochain_types/0.5.0-dev.0/holochain_types/prelude/struct.DnaModifiers.html#structfield.properties). This means that you need to have a running conductor that has access to an AgentPubKey that can be insterted into the app. 

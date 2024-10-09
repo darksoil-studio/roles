@@ -24,9 +24,18 @@ export default withMermaid({
 		// https://vitepress.dev/reference/default-theme-config
 
 		sidebar: [
+
+			{
+				text: 'Overview',
+				link: '/overview.md',
+			},
 			{
 				text: 'Setup',
 				link: '/setup.md',
+			},
+			{
+				text: 'hc progenitor',
+				link: '/hc_progenitor.md',
 			},
 			{
 				text: 'API Reference',

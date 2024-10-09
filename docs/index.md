@@ -36,4 +36,4 @@ features:
 
 This module gives your apps the power of **role management**.
 
-It uses a *progenitor* as initial admin and allows consuming applications to create arbitrary roles and bind the possibility of preforming actions to those roles. 
+It uses a list of *progenitors* as initial admins and allows consuming applications to create arbitrary roles and bind the possibility of preforming actions to those roles. 

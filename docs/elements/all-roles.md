@@ -27,6 +27,11 @@ Here is an interactive demo of the element:
 <element-demo>
 </element-demo>
 
+```mermaid
+graph TD;
+  A-->B
+```
+
 <script setup>
 import { onMounted } from "vue";
 import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
@@ -63,7 +68,14 @@ onMounted(async () => {
 
   const record = await mock.create_role_claim(roleClaim);
 
-  const store = new RolesStore(client);
+  const store = new RolesStore(client, {
+    roles_config: [{
+      role: 'editor',
+      singular_name: 'editor',
+      plural_name: 'editor',
+      description: 'editor',
+    }]
+  });
   
   render(html`
     <profiles-context .store=${profilesStore}>

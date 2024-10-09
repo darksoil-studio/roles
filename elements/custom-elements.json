@@ -1,0 +1,1177 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "locales/locales.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "sourceLocale",
+          "default": "`en`",
+          "description": "The locale code that templates in this source code are written in."
+        },
+        {
+          "kind": "variable",
+          "name": "targetLocales",
+          "type": {
+            "text": "array"
+          },
+          "default": "[\n  ,\n]",
+          "description": "The other locale codes that this application is localized into. Sorted\nlexicographically."
+        },
+        {
+          "kind": "variable",
+          "name": "allLocales",
+          "type": {
+            "text": "array"
+          },
+          "default": "[\n  `en`,\n]",
+          "description": "All valid project locale codes. Sorted lexicographically."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "sourceLocale",
+          "declaration": {
+            "name": "sourceLocale",
+            "module": "locales/locales.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "targetLocales",
+          "declaration": {
+            "name": "targetLocales",
+            "module": "locales/locales.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "allLocales",
+          "declaration": {
+            "name": "allLocales",
+            "module": "locales/locales.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/context.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "rolesStoreContext"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "rolesStoreContext",
+          "declaration": {
+            "name": "rolesStoreContext",
+            "module": "src/context.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/index.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./roles-store.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./roles-client.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./context.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./types.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "package": "./role-config.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mocks.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesZomeMock",
+          "members": [
+            {
+              "kind": "field",
+              "name": "roleClaims",
+              "default": "new HoloHashMap<\n\t\tActionHash,\n\t\t{\n\t\t\tdeletes: Array<SignedActionHashed<Delete>>;\n\t\t\trevisions: Array<Record>;\n\t\t}\n\t>()",
+              "description": "Role Claim"
+            },
+            {
+              "kind": "method",
+              "name": "create_role_claim",
+              "return": {
+                "type": {
+                  "text": "Promise<Record>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaim",
+                  "type": {
+                    "text": "RoleClaim"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "get_role_claim",
+              "return": {
+                "type": {
+                  "text": "Promise<Record | undefined>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaimHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "get_all_deletes_for_role_claim",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<SignedActionHashed<Delete>> | undefined>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaimHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "get_oldest_delete_for_role_claim",
+              "return": {
+                "type": {
+                  "text": "Promise<SignedActionHashed<Delete> | undefined>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaimHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "delete_role_claim",
+              "return": {
+                "type": {
+                  "text": "Promise<ActionHash>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "original_role_claim_hash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "get_all_roles",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<Link>>"
+                }
+              }
+            }
+          ],
+          "superclass": {
+            "name": "ZomeMock",
+            "package": "@holochain-open-dev/utils"
+          }
+        },
+        {
+          "kind": "function",
+          "name": "sampleRoleClaim",
+          "return": {
+            "type": {
+              "text": "Promise<RoleClaim>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "client",
+              "type": {
+                "text": "RolesClient"
+              }
+            },
+            {
+              "name": "partialRoleClaim",
+              "default": "{}",
+              "type": {
+                "text": "Partial<RoleClaim>"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesZomeMock",
+          "declaration": {
+            "name": "RolesZomeMock",
+            "module": "src/mocks.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sampleRoleClaim",
+          "declaration": {
+            "name": "sampleRoleClaim",
+            "module": "src/mocks.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/notifications.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "NOTIFICATIONS_TYPES",
+          "type": {
+            "text": "object"
+          },
+          "default": "{\n\tASSIGNED_ROLE: 'roles/assigned_role',\n\tUNASSIGNED_ROLE: 'roles/unassigned_role',\n}"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "NOTIFICATIONS_TYPES",
+          "declaration": {
+            "name": "NOTIFICATIONS_TYPES",
+            "module": "src/notifications.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/role-config.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "adminRoleConfig",
+          "type": {
+            "text": "RoleConfig"
+          },
+          "default": "{\n\trole: 'admin',\n\tsingular_name: msg('Administrator'),\n\tplural_name: msg('Administrators'),\n\tdescription: msg(\n\t\t'Administrators can add and remove assignees for any other role.',\n\t),\n}"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "adminRoleConfig",
+          "declaration": {
+            "name": "adminRoleConfig",
+            "module": "src/role-config.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/roles-client.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesClient",
+          "members": [
+            {
+              "kind": "method",
+              "name": "createRoleClaim",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaim",
+                  "type": {
+                    "text": "RoleClaim"
+                  }
+                }
+              ],
+              "description": "Role Claim"
+            },
+            {
+              "kind": "method",
+              "name": "getRoleClaim",
+              "return": {
+                "type": {
+                  "text": "Promise<EntryRecord<RoleClaim> | undefined>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "roleClaimHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getAllDeletesForRoleClaim",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<SignedActionHashed<Delete>> | undefined>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "originalRoleClaimHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "queryUndeletedRoleClaimsForRole",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<EntryRecord<RoleClaim>>>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "roleBaseAddress",
+              "return": {
+                "type": {
+                  "text": "Promise<EntryHash>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "All Roles"
+            },
+            {
+              "kind": "method",
+              "name": "getAssigneesForRole",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<Link>>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Assignees"
+            },
+            {
+              "kind": "method",
+              "name": "assignRole",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "assignees",
+                  "type": {
+                    "text": "AgentPubKey[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "requestUnassignRole",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "assignee",
+                  "type": {
+                    "text": "AgentPubKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "unassignMyRole",
+              "return": {
+                "type": {
+                  "text": "Promise<void>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "pendingUnassigmentCreateLinkHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getPendingUnassignments",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<Link>>"
+                }
+              },
+              "description": "Pending Unassigments"
+            }
+          ],
+          "superclass": {
+            "name": "ZomeClient",
+            "package": "@holochain-open-dev/utils"
+          }
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesClient",
+          "declaration": {
+            "name": "RolesClient",
+            "module": "src/roles-client.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/roles-store.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesStore",
+          "members": [
+            {
+              "kind": "field",
+              "name": "_unassigningRoleCreateLinkHash",
+              "type": {
+                "text": "ActionHash[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "_claimingRoles",
+              "type": {
+                "text": "ActionHash[]"
+              },
+              "privacy": "private",
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "myRoleClaims",
+              "default": "new LazyMap((role: string) =>\n\t\tqueryLiveEntriesSignal(\n\t\t\tthis.client,\n\t\t\t() => this.client.queryUndeletedRoleClaimsForRole(role),\n\t\t\t'RoleClaim',\n\t\t),\n\t)",
+              "description": "Role Claim"
+            },
+            {
+              "kind": "field",
+              "name": "allRoles",
+              "type": {
+                "text": "string[]"
+              },
+              "description": "All Roles",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "roleBaseAddress",
+              "privacy": "private",
+              "default": "new LazyMap((role: string) =>\n\t\tfromPromise(() => this.client.roleBaseAddress(role)),\n\t)"
+            },
+            {
+              "kind": "field",
+              "name": "roleToAssigneeLinks",
+              "privacy": "private",
+              "default": "new LazyMap((role: string) =>\n\t\tpipe(this.roleBaseAddress.get(role), roleBaseAddress =>\n\t\t\tliveLinksSignal(\n\t\t\t\tthis.client,\n\t\t\t\troleBaseAddress,\n\t\t\t\t() => this.client.getAssigneesForRole(role),\n\t\t\t\t'RoleToAssignee',\n\t\t\t\t4000,\n\t\t\t),\n\t\t),\n\t)"
+            },
+            {
+              "kind": "field",
+              "name": "assignees",
+              "default": "new LazyMap(\n\t\t(role: string) =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesLinks = this.roleToAssigneeLinks.get(role).get();\n\t\t\t\tconst pendingUnassignments = this.pendingUnassignments.get();\n\t\t\t\tconst myRoleClaims = this.myRoleClaims.get(role).get();\n\n\t\t\t\tif (assigneesLinks.status !== 'completed') return assigneesLinks;\n\t\t\t\tif (pendingUnassignments.status !== 'completed')\n\t\t\t\t\treturn pendingUnassignments;\n\t\t\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.value.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole =\n\t\t\t\t\tpendingUnassignments.value.filter(\n\t\t\t\t\t\tpendingUnassignment =>\n\t\t\t\t\t\t\tencodeHashToBase64(\n\t\t\t\t\t\t\t\tretype(pendingUnassignment.target, HashType.AGENT),\n\t\t\t\t\t\t\t) === encodeHashToBase64(this.client.client.myPubKey) &&\n\t\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassignment.tag) === role,\n\t\t\t\t\t);\n\t\t\t\tif (myPendingUnassignmentsForThisRole.length > 0) {\n\t\t\t\t\tassignees = assignees.filter(\n\t\t\t\t\t\ta =>\n\t\t\t\t\t\t\tencodeHashToBase64(a) !==\n\t\t\t\t\t\t\tencodeHashToBase64(this.client.client.myPubKey),\n\t\t\t\t\t);\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assignees,\n\t\t\t\t};\n\t\t\t}),\n\t)"
+            },
+            {
+              "kind": "field",
+              "name": "rolesForAgent",
+              "default": "new LazyHoloHashMap(\n\t\tassignee =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesByRoles = joinAsyncMap(\n\t\t\t\t\tmapValues(slice(this.assignees, this.allRoles), r => r.get()),\n\t\t\t\t);\n\t\t\t\tif (assigneesByRoles.status !== 'completed') return assigneesByRoles;\n\n\t\t\t\tconst assigneeRoles: string[] = [];\n\n\t\t\t\tfor (const [role, assignees] of Array.from(\n\t\t\t\t\tassigneesByRoles.value.entries(),\n\t\t\t\t)) {\n\t\t\t\t\tif (\n\t\t\t\t\t\tassignees.find(\n\t\t\t\t\t\t\ta => encodeHashToBase64(assignee) === encodeHashToBase64(a),\n\t\t\t\t\t\t)\n\t\t\t\t\t) {\n\t\t\t\t\t\tassigneeRoles.push(role);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assigneeRoles,\n\t\t\t\t};\n\t\t\t}),\n\t)"
+            },
+            {
+              "kind": "field",
+              "name": "pendingUnassignments"
+            },
+            {
+              "kind": "field",
+              "name": "myRoles",
+              "default": "new AsyncComputed(() => {\n\t\tconst myRoles = this.rolesForAgent.get(this.client.client.myPubKey).get();\n\t\tif (myRoles.status !== 'completed') return myRoles;\n\n\t\tconst myRoleClaims = joinAsync(\n\t\t\tmyRoles.value.map(role => this.myRoleClaims.get(role).get()),\n\t\t);\n\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\tconst myClaimedRoles = myRoles.value.filter(\n\t\t\t(_, i) => myRoleClaims.value[i].length > 0,\n\t\t);\n\n\t\treturn {\n\t\t\tstatus: 'completed',\n\t\t\tvalue: myClaimedRoles,\n\t\t};\n\t})"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesStore",
+          "declaration": {
+            "name": "RolesStore",
+            "module": "src/roles-store.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/signal.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "mapValues",
+          "return": {
+            "type": {
+              "text": "ReadonlyMap<K, U>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "map",
+              "type": {
+                "text": "ReadonlyMap<K, V>"
+              }
+            },
+            {
+              "name": "mappingFn",
+              "type": {
+                "text": "(value: V, key: K) => U"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "joinAsyncMap",
+          "return": {
+            "type": {
+              "text": "AsyncResult<ReadonlyMap<K, T>>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "map",
+              "type": {
+                "text": "ReadonlyMap<K, AsyncResult<T>>"
+              }
+            },
+            {
+              "name": "joinOptions",
+              "optional": true,
+              "type": {
+                "text": "JoinAsyncOptions"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "slice",
+          "return": {
+            "type": {
+              "text": "ReadonlyMap<K, V>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "map",
+              "type": {
+                "text": "GetonlyMap<K, V>"
+              }
+            },
+            {
+              "name": "keys",
+              "type": {
+                "text": "K[]"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "queryLiveEntriesSignal",
+          "return": {
+            "type": {
+              "text": "AsyncSignal<Array<EntryRecord<T>>>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "client",
+              "type": {
+                "text": "ZomeClient<S>"
+              }
+            },
+            {
+              "name": "queryEntries",
+              "type": {
+                "text": "() => Promise<Array<EntryRecord<T>>>"
+              }
+            },
+            {
+              "name": "entry_type",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "pollIntervalMs",
+              "default": "20_000",
+              "type": {
+                "text": "number"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "mapValues",
+          "declaration": {
+            "name": "mapValues",
+            "module": "src/signal.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "joinAsyncMap",
+          "declaration": {
+            "name": "joinAsyncMap",
+            "module": "src/signal.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "slice",
+          "declaration": {
+            "name": "slice",
+            "module": "src/signal.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "queryLiveEntriesSignal",
+          "declaration": {
+            "name": "queryLiveEntriesSignal",
+            "module": "src/signal.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/types.ts",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/all-roles.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "AllRoles",
+          "members": [],
+          "mixins": [
+            {
+              "name": "SignalWatcher",
+              "package": "@holochain-open-dev/signals"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "all-roles",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "AllRoles",
+          "declaration": {
+            "name": "AllRoles",
+            "module": "src/elements/all-roles.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "all-roles",
+          "declaration": {
+            "name": "AllRoles",
+            "module": "src/elements/all-roles.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/role-detail.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RoleDetail",
+          "members": [
+            {
+              "kind": "field",
+              "name": "role",
+              "type": {
+                "text": "string"
+              },
+              "attribute": "role"
+            },
+            {
+              "kind": "field",
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              },
+              "attribute": "rolesStore"
+            },
+            {
+              "kind": "field",
+              "name": "committing",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "removingRole",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "addMembersToRole",
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "assignees",
+                  "type": {
+                    "text": "AgentPubKey[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "removeRole",
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "assignee",
+                  "type": {
+                    "text": "AgentPubKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "name",
+              "return": {
+                "type": {
+                  "text": "string | undefined"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "agent",
+                  "type": {
+                    "text": "AgentPubKey"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "renderRemoveRoleAction",
+              "parameters": [
+                {
+                  "name": "roleConfig",
+                  "type": {
+                    "text": "RoleConfig"
+                  }
+                },
+                {
+                  "name": "assignee",
+                  "type": {
+                    "text": "AgentPubKey"
+                  }
+                },
+                {
+                  "name": "assigneesCount",
+                  "type": {
+                    "text": "number"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "renderRole",
+              "parameters": [
+                {
+                  "name": "roleConfig",
+                  "type": {
+                    "text": "RoleConfig"
+                  }
+                },
+                {
+                  "name": "assignees",
+                  "type": {
+                    "text": "AgentPubKey[]"
+                  }
+                },
+                {
+                  "name": "iAmAdmin",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "assigneesForRoleAndIAmAdmin"
+            }
+          ],
+          "events": [
+            {
+              "name": "role-assigned-to-members",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "unassig-role-requested",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "role",
+              "type": {
+                "text": "string"
+              },
+              "fieldName": "role"
+            },
+            {
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              },
+              "fieldName": "rolesStore"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "SignalWatcher",
+              "package": "@holochain-open-dev/signals"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "role-detail",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RoleDetail",
+          "declaration": {
+            "name": "RoleDetail",
+            "module": "src/elements/role-detail.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "role-detail",
+          "declaration": {
+            "name": "RoleDetail",
+            "module": "src/elements/role-detail.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/roles-context.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesContext",
+          "members": [
+            {
+              "kind": "field",
+              "name": "store",
+              "type": {
+                "text": "RolesStore"
+              },
+              "attribute": "store"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "store",
+              "type": {
+                "text": "RolesStore"
+              },
+              "fieldName": "store"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "roles-context",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesContext",
+          "declaration": {
+            "name": "RolesContext",
+            "module": "src/elements/roles-context.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "roles-context",
+          "declaration": {
+            "name": "RolesContext",
+            "module": "src/elements/roles-context.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/roles-for-agent.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesForAgent",
+          "members": [
+            {
+              "kind": "field",
+              "name": "agent",
+              "type": {
+                "text": "AgentPubKey"
+              },
+              "attribute": "agent"
+            },
+            {
+              "kind": "field",
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "roleSingularName",
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "renderRoles",
+              "parameters": [
+                {
+                  "name": "roles",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            }
+          ],
+          "attributes": [
+            {
+              "name": "agent",
+              "type": {
+                "text": "AgentPubKey"
+              },
+              "fieldName": "agent"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "SignalWatcher",
+              "package": "@holochain-open-dev/signals"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "roles-for-agent",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesForAgent",
+          "declaration": {
+            "name": "RolesForAgent",
+            "module": "src/elements/roles-for-agent.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "roles-for-agent",
+          "declaration": {
+            "name": "RolesForAgent",
+            "module": "src/elements/roles-for-agent.ts"
+          }
+        }
+      ]
+    }
+  ]
+}

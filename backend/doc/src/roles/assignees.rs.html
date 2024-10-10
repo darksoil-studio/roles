@@ -144,6 +144,15 @@
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
@@ -152,19 +161,22 @@
     utils::{delete_link_relaxed, delete_relaxed},
 };
 
-<span class="attr">#[derive(Serialize, Deserialize, Debug)]
+<span class="doccomment">///Input structure for assigning roles
+</span><span class="attr">#[derive(Serialize, Deserialize, Debug)]
 </span><span class="kw">pub struct </span>AssignRoleInput {
     <span class="kw">pub </span>role: String,
     <span class="kw">pub </span>assignees: Vec&lt;AgentPubKey&gt;,
 }
 
-<span class="attr">#[derive(Serialize, Deserialize, Debug)]
+<span class="doccomment">///Inpur structure for unassigning roles
+</span><span class="attr">#[derive(Serialize, Deserialize, Debug)]
 </span><span class="kw">pub struct </span>RequestUnassignRoleInput {
     <span class="kw">pub </span>role: String,
     <span class="kw">pub </span>assignee: AgentPubKey,
 }
 
-<span class="comment">// Just to be able to call this from init
+
+<span class="doccomment">/// Assign role function used in init function
 </span><span class="kw">pub fn </span>assign_role_to_single_agent(
     role: String,
     assignee: AgentPubKey,
@@ -179,7 +191,8 @@
     )
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Assigning roles to agents 
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>assign_role(input: AssignRoleInput) -&gt; ExternResult&lt;()&gt; {
     <span class="kw">let </span>path = role_path(<span class="kw-2">&amp;</span>input.role)<span class="question-mark">?</span>;
     path.ensure()<span class="question-mark">?</span>;
@@ -202,11 +215,13 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>pending_unassignments_path() -&gt; Path {
+<span class="doccomment">///Generating path to pending_unassignments
+</span><span class="kw">fn </span>pending_unassignments_path() -&gt; Path {
     Path::from(<span class="string">"pending_unassignments"</span>)
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Creating requests for people to unassign roles
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>request_unassign_role(input: RequestUnassignRoleInput) -&gt; ExternResult&lt;()&gt; {
     create_link(
         pending_unassignments_path().path_entry_hash()<span class="question-mark">?</span>,
@@ -218,7 +233,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Agents call this function to unassign their own roles
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>unassign_my_role(pending_unassignment_link: ActionHash) -&gt; ExternResult&lt;()&gt; {
     <span class="kw">let </span><span class="prelude-val">Some</span>(record) = get(pending_unassignment_link.clone(), GetOptions::network())<span class="question-mark">? </span><span class="kw">else </span>{
         <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">wasm_error!</span>(WasmErrorInner::Guest(String::from(
@@ -268,7 +284,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Get pending unassignments to see if I should unassign of if someone should but haven't
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>get_pending_unassignments() -&gt; ExternResult&lt;Vec&lt;Link&gt;&gt; {
     get_links(
         GetLinksInputBuilder::try_new(
@@ -279,7 +296,8 @@
     )
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Get all agents that have been assigned a role
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>get_assignees_for_role(role: String) -&gt; ExternResult&lt;Vec&lt;Link&gt;&gt; {
     <span class="kw">let </span>path = role_path(<span class="kw-2">&amp;</span>role)<span class="question-mark">?</span>;
 

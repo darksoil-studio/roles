@@ -94,22 +94,28 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdi::prelude::holo_hash::AgentPubKeyB64;
 <span class="kw">use </span>hdi::prelude::<span class="kw-2">*</span>;
 
-<span class="attr">#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
+<span class="doccomment">///App properties (progenitor info)
+</span><span class="attr">#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
 </span><span class="kw">pub struct </span>Properties {
     <span class="kw">pub </span>progenitors: Vec&lt;AgentPubKeyB64&gt;,
 }
 
-<span class="attr">#[derive(Clone, PartialEq)]
+<span class="doccomment">///RoleClaim structure
+</span><span class="attr">#[derive(Clone, PartialEq)]
 #[hdk_entry_helper]
 </span><span class="kw">pub struct </span>RoleClaim {
     <span class="kw">pub </span>role: String,
     <span class="kw">pub </span>assign_role_create_link_hash: ActionHash,
 }
 
-<span class="kw">pub fn </span>validate_agent_had_undeleted_role_claim_at_the_time(
+<span class="doccomment">///Validate that agents had acces to the role at the time of the action (an undeleted claim earlier in source chain)
+</span><span class="kw">pub fn </span>validate_agent_had_undeleted_role_claim_at_the_time(
     agent: <span class="kw-2">&amp;</span>AgentPubKey,
     chain_top: <span class="kw-2">&amp;</span>ActionHash,
     role: <span class="kw-2">&amp;</span>String,
@@ -134,8 +140,8 @@
         ZomeIndex::new(roles_zome_index <span class="kw">as </span>u8),
     )
 }
-
-<span class="kw">pub fn </span>validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index(
+<span class="doccomment">///Validate that agents had acces to the role at the time (with zome index)
+</span><span class="kw">pub fn </span>validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index(
     agent: <span class="kw-2">&amp;</span>AgentPubKey,
     chain_top: <span class="kw-2">&amp;</span>ActionHash,
     role: <span class="kw-2">&amp;</span>String,

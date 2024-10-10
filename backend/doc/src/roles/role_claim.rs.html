@@ -80,18 +80,25 @@
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">crate</span>::utils::create_relaxed;
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Claiming a role on agents source chain
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>create_role_claim(role_claim: RoleClaim) -&gt; ExternResult&lt;()&gt; {
     create_relaxed(EntryTypes::RoleClaim(role_claim.clone()))<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Get a role claim
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>get_role_claim(role_claim_hash: ActionHash) -&gt; ExternResult&lt;<span class="prelude-ty">Option</span>&lt;Record&gt;&gt; {
     <span class="kw">let </span><span class="prelude-val">Some</span>(details) = get_details(role_claim_hash, GetOptions::default())<span class="question-mark">? </span><span class="kw">else </span>{
         <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
@@ -104,7 +111,8 @@
     }
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Find undeleted role claims for a role
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>query_undeleted_role_claims_for_role(role: String) -&gt; ExternResult&lt;Vec&lt;Record&gt;&gt; {
     <span class="kw">let </span>filter = ChainQueryFilter::new()
         .entry_type(UnitEntryTypes::RoleClaim.try_into()<span class="question-mark">?</span>)
@@ -142,11 +150,13 @@
     <span class="prelude-val">Ok</span>(records_for_role)
 }
 
-<span class="kw">pub fn </span>delete_role_claim(original_role_claim_hash: ActionHash) -&gt; ExternResult&lt;ActionHash&gt; {
+<span class="doccomment">///Delete role claim (removing role)
+</span><span class="kw">pub fn </span>delete_role_claim(original_role_claim_hash: ActionHash) -&gt; ExternResult&lt;ActionHash&gt; {
     delete_entry(original_role_claim_hash)
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Find all deletions for role claim
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>get_all_deletes_for_role_claim(
     original_role_claim_hash: ActionHash,
 ) -&gt; ExternResult&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;SignedActionHashed&gt;&gt;&gt; {

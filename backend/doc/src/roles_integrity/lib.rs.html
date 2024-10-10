@@ -434,6 +434,10 @@
 <a href="#432" id="432">432</a>
 <a href="#433" id="433">433</a>
 <a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdi::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub mod </span>role_claim;
@@ -451,6 +455,7 @@
 <span class="kw">pub mod </span>assignees;
 <span class="kw">pub use </span>assignees::<span class="kw-2">*</span>;
 
+
 <span class="attr">#[derive(Serialize, Deserialize)]
 #[serde(tag = <span class="string">"type"</span>)]
 #[hdk_entry_types]
@@ -459,7 +464,8 @@
     RoleClaim(RoleClaim),
 }
 
-<span class="attr">#[derive(Serialize, Deserialize)]
+<span class="doccomment">///LinkTypes available in the module
+</span><span class="attr">#[derive(Serialize, Deserialize)]
 #[hdk_link_types]
 </span><span class="kw">pub enum </span>LinkTypes {
     RolesPath,
@@ -480,14 +486,15 @@
     </span><span class="prelude-val">Ok</span>(ValidateCallbackResult::Valid)
 }
 
-<span class="kw">pub fn </span>validate_agent_joining(
+<span class="doccomment">///Checking the membrane proof of joining agent
+</span><span class="kw">pub fn </span>validate_agent_joining(
     _agent_pub_key: AgentPubKey,
     _membrane_proof: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;MembraneProof&gt;,
 ) -&gt; ExternResult&lt;ValidateCallbackResult&gt; {
     <span class="prelude-val">Ok</span>(ValidateCallbackResult::Valid)
 }
-
-<span class="kw">pub fn </span>action_hash(op: <span class="kw-2">&amp;</span>Op) -&gt; <span class="kw-2">&amp;</span>ActionHash {
+<span class="doccomment">///Finding the appropriate action for an action hash
+</span><span class="kw">pub fn </span>action_hash(op: <span class="kw-2">&amp;</span>Op) -&gt; <span class="kw-2">&amp;</span>ActionHash {
     <span class="kw">match </span>op {
         Op::StoreRecord(StoreRecord { record }) =&gt; record.action_address(),
         Op::StoreEntry(StoreEntry { action, .. }) =&gt; <span class="kw-2">&amp;</span>action.hashed.hash,
@@ -499,7 +506,8 @@
     }
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Validate operation
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>validate(op: Op) -&gt; ExternResult&lt;ValidateCallbackResult&gt; {
     <span class="kw">match </span>op.flattened::&lt;EntryTypes, LinkTypes&gt;()<span class="question-mark">? </span>{
         FlatOp::StoreEntry(store_entry) =&gt; <span class="kw">match </span>store_entry {

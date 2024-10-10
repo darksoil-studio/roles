@@ -68,10 +68,15 @@
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
 <a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_integrity::<span class="kw-2">*</span>;
 
-<span class="kw">pub fn </span>create_relaxed(entry_type: EntryTypes) -&gt; ExternResult&lt;()&gt; {
+<span class="doccomment">///Allow other processes to get commited to source chain before commiting the commit
+</span><span class="kw">pub fn </span>create_relaxed(entry_type: EntryTypes) -&gt; ExternResult&lt;()&gt; {
     HDK.with(|h| {
         <span class="kw">let </span>index = ScopedEntryDefIndex::try_from(<span class="kw-2">&amp;</span>entry_type)<span class="question-mark">?</span>;
         <span class="kw">let </span>vis = EntryVisibility::from(<span class="kw-2">&amp;</span>entry_type);
@@ -91,7 +96,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>create_link_relaxed&lt;T, E&gt;(
+<span class="doccomment">///Allowing other links to be created and commited before commiting link
+</span><span class="kw">pub fn </span>create_link_relaxed&lt;T, E&gt;(
     base_address: <span class="kw">impl </span>Into&lt;AnyLinkableHash&gt;,
     target_address: <span class="kw">impl </span>Into&lt;AnyLinkableHash&gt;,
     link_type: T,
@@ -119,7 +125,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>delete_link_relaxed(address: ActionHash) -&gt; ExternResult&lt;()&gt; {
+<span class="doccomment">///Allowing for other operations to commit before committing link deletion
+</span><span class="kw">pub fn </span>delete_link_relaxed(address: ActionHash) -&gt; ExternResult&lt;()&gt; {
     HDK.with(|h| {
         h.borrow()
             .delete_link(DeleteLinkInput::new(address, ChainTopOrdering::Relaxed))
@@ -128,7 +135,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>delete_relaxed(address: ActionHash) -&gt; ExternResult&lt;()&gt; {
+<span class="doccomment">///Allowing for other operations to commit before deleting an entry
+</span><span class="kw">pub fn </span>delete_relaxed(address: ActionHash) -&gt; ExternResult&lt;()&gt; {
     HDK.with(|h| {
         h.borrow()
             .delete(DeleteInput::new(address, ChainTopOrdering::Relaxed))

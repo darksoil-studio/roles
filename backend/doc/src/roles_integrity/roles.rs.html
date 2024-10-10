@@ -81,27 +81,34 @@
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdi::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">use </span><span class="kw">crate</span>::LinkTypes;
 
-<span class="kw">pub fn </span>all_roles_path() -&gt; ExternResult&lt;TypedPath&gt; {
+<span class="doccomment">///Generate the all_roles path
+</span><span class="kw">pub fn </span>all_roles_path() -&gt; ExternResult&lt;TypedPath&gt; {
     Path::from(<span class="string">"all_roles"</span>).typed(LinkTypes::RolesPath)
 }
 
-<span class="kw">pub fn </span>role_path(role: <span class="kw-2">&amp;</span>String) -&gt; ExternResult&lt;TypedPath&gt; {
+<span class="doccomment">///Generate the path to role (from all_roles)
+</span><span class="kw">pub fn </span>role_path(role: <span class="kw-2">&amp;</span>String) -&gt; ExternResult&lt;TypedPath&gt; {
     <span class="kw">let </span>all_roles = all_roles_path()<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>components = all_roles.path.<span class="number">0</span>;
     components.push(Component::from(role));
     Path::from(components).typed(LinkTypes::RolesPath)
 }
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///Generate the base address for a role based on path
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>role_base_address(role: String) -&gt; ExternResult&lt;EntryHash&gt; {
     role_path(<span class="kw-2">&amp;</span>role)<span class="question-mark">?</span>.path_entry_hash()
 }
-
-<span class="kw">pub fn </span>validate_create_link_roles_path(
+<span class="doccomment">///Validate the creation correct link paths for role links
+</span><span class="kw">pub fn </span>validate_create_link_roles_path(
     _action: CreateLink,
     base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
@@ -151,7 +158,8 @@
     <span class="prelude-val">Ok</span>(ValidateCallbackResult::Valid)
 }
 
-<span class="kw">pub fn </span>validate_delete_link_roles_path(
+<span class="doccomment">///Validate the path of delete links
+</span><span class="kw">pub fn </span>validate_delete_link_roles_path(
     _action: DeleteLink,
     _original_action: CreateLink,
     _base: AnyLinkableHash,

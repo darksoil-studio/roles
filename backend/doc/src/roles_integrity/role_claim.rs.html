@@ -143,12 +143,16 @@
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdi::prelude::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>roles_types::{validate_agent_had_undeleted_role_claim_at_the_time, RoleClaim};
 
 <span class="kw">use crate</span>::{role_path, LinkTypes};
 
-<span class="kw">pub fn </span>validate_create_role_claim(
+<span class="doccomment">///Validate the creation of a role claim for an agent
+</span><span class="kw">pub fn </span>validate_create_role_claim(
     action: EntryCreationAction,
     role_claim: RoleClaim,
 ) -&gt; ExternResult&lt;ValidateCallbackResult&gt; {
@@ -268,7 +272,8 @@
     <span class="prelude-val">Ok</span>(ValidateCallbackResult::Valid)
 }
 
-<span class="kw">pub fn </span>validate_update_role_claim(
+<span class="doccomment">///Validate the update role claim
+</span><span class="kw">pub fn </span>validate_update_role_claim(
     _action: Update,
     _role_claim: RoleClaim,
     _original_action: EntryCreationAction,
@@ -279,7 +284,8 @@
     ))
 }
 
-<span class="kw">pub fn </span>validate_delete_role_claim(
+<span class="doccomment">///Validate the deletion of a role claim for an Agent
+</span><span class="kw">pub fn </span>validate_delete_role_claim(
     _action: Delete,
     _original_action: EntryCreationAction,
     _original_role_claim: RoleClaim,

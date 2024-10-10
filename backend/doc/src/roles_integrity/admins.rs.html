@@ -16,12 +16,16 @@
 <a href="#14" id="14">14</a>
 <a href="#15" id="15">15</a>
 <a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>hdi::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>roles_types::validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index;
 
-<span class="kw">pub const </span>ADMIN_ROLE: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str = <span class="string">"admin"</span>;
+<span class="doccomment">///Hardcoded admin role need for creating other roles
+</span><span class="kw">pub const </span>ADMIN_ROLE: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str = <span class="string">"admin"</span>;
 
-<span class="kw">pub fn </span>validate_agent_was_admin_at_the_time(
+<span class="doccomment">///Validating that the Agent had a claim of the ADMIN_ROLE in their source chain prior to some action
+</span><span class="kw">pub fn </span>validate_agent_was_admin_at_the_time(
     agent: <span class="kw-2">&amp;</span>AgentPubKey,
     chain_top: <span class="kw-2">&amp;</span>ActionHash,
 ) -&gt; ExternResult&lt;ValidateCallbackResult&gt; {

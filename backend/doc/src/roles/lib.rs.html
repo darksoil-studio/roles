@@ -149,6 +149,11 @@
 <a href="#147" id="147">147</a>
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>assignees::assign_role_to_single_agent;
 <span class="kw">use </span>hdk::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>role_claim::create_role_claim;
@@ -158,7 +163,8 @@
 <span class="kw">pub mod </span>role_claim;
 <span class="kw">pub mod </span>utils;
 
-<span class="attr">#[hdk_extern]
+<span class="doccomment">///initial function called when entering happ (if Agent is progenitor then Admin role is claimed)
+</span><span class="attr">#[hdk_extern]
 </span><span class="kw">pub fn </span>init(<span class="kw">_</span>: ()) -&gt; ExternResult&lt;InitCallbackResult&gt; {
     <span class="comment">// If I'm a progenitor, automatically claim the admin role
     </span><span class="kw">let </span>agent_info = agent_info()<span class="question-mark">?</span>;
@@ -176,7 +182,8 @@
     <span class="prelude-val">Ok</span>(InitCallbackResult::Pass)
 }
 
-<span class="attr">#[derive(Serialize, Deserialize, Debug)]
+<span class="doccomment">///Signals available in the module
+</span><span class="attr">#[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = <span class="string">"type"</span>)]
 </span><span class="kw">pub enum </span>Signal {
     EntryCreated {
@@ -203,7 +210,8 @@
     },
 }
 
-<span class="attr">#[hdk_extern(infallible)]
+<span class="doccomment">///Commiting an action to the source chain
+</span><span class="attr">#[hdk_extern(infallible)]
 </span><span class="kw">pub fn </span>post_commit(committed_actions: Vec&lt;SignedActionHashed&gt;) {
     <span class="kw">for </span>action <span class="kw">in </span>committed_actions {
         <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = signal_action(action) {
@@ -212,7 +220,8 @@
     }
 }
 
-<span class="kw">fn </span>signal_action(action: SignedActionHashed) -&gt; ExternResult&lt;()&gt; {
+<span class="doccomment">///Generate signals to handle all the actions made with module
+</span><span class="kw">fn </span>signal_action(action: SignedActionHashed) -&gt; ExternResult&lt;()&gt; {
     <span class="kw">match </span>action.hashed.content.clone() {
         Action::Create(_create) =&gt; {
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(app_entry)) = get_entry_for_action(<span class="kw-2">&amp;</span>action.hashed.hash) {
@@ -279,7 +288,8 @@
     }
 }
 
-<span class="kw">fn </span>get_entry_for_action(action_hash: <span class="kw-2">&amp;</span>ActionHash) -&gt; ExternResult&lt;<span class="prelude-ty">Option</span>&lt;EntryTypes&gt;&gt; {
+<span class="doccomment">///Retrieve entry for a specific action
+</span><span class="kw">fn </span>get_entry_for_action(action_hash: <span class="kw-2">&amp;</span>ActionHash) -&gt; ExternResult&lt;<span class="prelude-ty">Option</span>&lt;EntryTypes&gt;&gt; {
     <span class="kw">let </span>record = <span class="kw">match </span>get_details(action_hash.clone(), GetOptions::default())<span class="question-mark">? </span>{
         <span class="prelude-val">Some</span>(Details::Record(record_details)) =&gt; record_details.record,
         <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),

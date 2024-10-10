@@ -1,11 +1,13 @@
 use hdi::prelude::holo_hash::AgentPubKeyB64;
 use hdi::prelude::*;
 
+///App properties (progenitor info)
 #[derive(Serialize, Deserialize, Debug, SerializedBytes)]
 pub struct Properties {
     pub progenitors: Vec<AgentPubKeyB64>,
 }
 
+///RoleClaim structure
 #[derive(Clone, PartialEq)]
 #[hdk_entry_helper]
 pub struct RoleClaim {
@@ -13,6 +15,7 @@ pub struct RoleClaim {
     pub assign_role_create_link_hash: ActionHash,
 }
 
+///Validate that agents had acces to the role at the time of the action (an undeleted claim earlier in source chain)
 pub fn validate_agent_had_undeleted_role_claim_at_the_time(
     agent: &AgentPubKey,
     chain_top: &ActionHash,
@@ -38,7 +41,7 @@ pub fn validate_agent_had_undeleted_role_claim_at_the_time(
         ZomeIndex::new(roles_zome_index as u8),
     )
 }
-
+///Validate that agents had acces to the role at the time (with zome index)
 pub fn validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index(
     agent: &AgentPubKey,
     chain_top: &ActionHash,

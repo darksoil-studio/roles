@@ -2,10 +2,12 @@ use hdi::prelude::*;
 
 use crate::LinkTypes;
 
+///Generate the all_roles path
 pub fn all_roles_path() -> ExternResult<TypedPath> {
     Path::from("all_roles").typed(LinkTypes::RolesPath)
 }
 
+///Generate the path to role (from all_roles)
 pub fn role_path(role: &String) -> ExternResult<TypedPath> {
     let all_roles = all_roles_path()?;
     let mut components = all_roles.path.0;
@@ -13,11 +15,12 @@ pub fn role_path(role: &String) -> ExternResult<TypedPath> {
     Path::from(components).typed(LinkTypes::RolesPath)
 }
 
+///Generate the base address for a role based on path
 #[hdk_extern]
 pub fn role_base_address(role: String) -> ExternResult<EntryHash> {
     role_path(&role)?.path_entry_hash()
 }
-
+///Validate the creation correct link paths for role links
 pub fn validate_create_link_roles_path(
     _action: CreateLink,
     base_address: AnyLinkableHash,
@@ -68,6 +71,7 @@ pub fn validate_create_link_roles_path(
     Ok(ValidateCallbackResult::Valid)
 }
 
+///Validate the path of delete links
 pub fn validate_delete_link_roles_path(
     _action: DeleteLink,
     _original_action: CreateLink,

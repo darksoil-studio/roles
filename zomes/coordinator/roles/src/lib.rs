@@ -7,6 +7,7 @@ pub mod assignees;
 pub mod role_claim;
 pub mod utils;
 
+///initial function called when entering happ (if Agent is progenitor then Admin role is claimed)
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     // If I'm a progenitor, automatically claim the admin role
@@ -25,6 +26,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)
 }
 
+///Signals available in the module
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Signal {
@@ -52,6 +54,7 @@ pub enum Signal {
     },
 }
 
+///Commiting an action to the source chain
 #[hdk_extern(infallible)]
 pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     for action in committed_actions {
@@ -61,6 +64,7 @@ pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     }
 }
 
+///Generate signals to handle all the actions made with module
 fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
     match action.hashed.content.clone() {
         Action::Create(_create) => {
@@ -128,6 +132,7 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
     }
 }
 
+///Retrieve entry for a specific action
 fn get_entry_for_action(action_hash: &ActionHash) -> ExternResult<Option<EntryTypes>> {
     let record = match get_details(action_hash.clone(), GetOptions::default())? {
         Some(Details::Record(record_details)) => record_details.record,

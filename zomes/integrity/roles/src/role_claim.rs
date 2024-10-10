@@ -3,6 +3,7 @@ pub use roles_types::{validate_agent_had_undeleted_role_claim_at_the_time, RoleC
 
 use crate::{role_path, LinkTypes};
 
+///Validate the creation of a role claim for an agent
 pub fn validate_create_role_claim(
     action: EntryCreationAction,
     role_claim: RoleClaim,
@@ -123,6 +124,7 @@ pub fn validate_create_role_claim(
     Ok(ValidateCallbackResult::Valid)
 }
 
+///Validate the update role claim
 pub fn validate_update_role_claim(
     _action: Update,
     _role_claim: RoleClaim,
@@ -134,6 +136,7 @@ pub fn validate_update_role_claim(
     ))
 }
 
+///Validate the deletion of a role claim for an Agent
 pub fn validate_delete_role_claim(
     _action: Delete,
     _original_action: EntryCreationAction,

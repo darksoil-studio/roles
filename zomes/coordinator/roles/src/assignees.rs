@@ -6,19 +6,22 @@ use crate::{
     utils::{delete_link_relaxed, delete_relaxed},
 };
 
+///Input structure for assigning roles
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AssignRoleInput {
     pub role: String,
     pub assignees: Vec<AgentPubKey>,
 }
 
+///Inpur structure for unassigning roles
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUnassignRoleInput {
     pub role: String,
     pub assignee: AgentPubKey,
 }
 
-// Just to be able to call this from init
+
+/// Assign role function used in init function
 pub fn assign_role_to_single_agent(
     role: String,
     assignee: AgentPubKey,
@@ -33,6 +36,7 @@ pub fn assign_role_to_single_agent(
     )
 }
 
+///Assigning roles to agents 
 #[hdk_extern]
 pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     let path = role_path(&input.role)?;
@@ -56,10 +60,12 @@ pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     Ok(())
 }
 
+///Generating path to pending_unassignments
 fn pending_unassignments_path() -> Path {
     Path::from("pending_unassignments")
 }
 
+///Creating requests for people to unassign roles
 #[hdk_extern]
 pub fn request_unassign_role(input: RequestUnassignRoleInput) -> ExternResult<()> {
     create_link(
@@ -72,6 +78,7 @@ pub fn request_unassign_role(input: RequestUnassignRoleInput) -> ExternResult<()
     Ok(())
 }
 
+///Agents call this function to unassign their own roles
 #[hdk_extern]
 pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<()> {
     let Some(record) = get(pending_unassignment_link.clone(), GetOptions::network())? else {
@@ -122,6 +129,7 @@ pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<(
     Ok(())
 }
 
+///Get pending unassignments to see if I should unassign of if someone should but haven't
 #[hdk_extern]
 pub fn get_pending_unassignments() -> ExternResult<Vec<Link>> {
     get_links(
@@ -133,6 +141,7 @@ pub fn get_pending_unassignments() -> ExternResult<Vec<Link>> {
     )
 }
 
+///Get all agents that have been assigned a role
 #[hdk_extern]
 pub fn get_assignees_for_role(role: String) -> ExternResult<Vec<Link>> {
     let path = role_path(&role)?;

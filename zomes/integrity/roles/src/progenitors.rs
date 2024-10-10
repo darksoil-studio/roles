@@ -1,6 +1,7 @@
 use hdi::prelude::*;
 use roles_types::*;
 
+///Returns progenitors 
 #[hdk_extern]
 pub fn progenitors() -> ExternResult<Vec<AgentPubKey>> {
     let properties = dna_info()?.modifiers.properties;

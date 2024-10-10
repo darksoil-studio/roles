@@ -2,6 +2,7 @@ use hdi::prelude::*;
 
 use crate::{progenitors, role_path, validate_agent_was_admin_at_the_time, LinkTypes, RoleClaim};
 
+/// Validation of the link that assignees use to claim roles, checks entrytypes, paths and that issuer was admin
 pub fn validate_create_link_role_to_assignee(
     action_hash: &ActionHash,
     action: CreateLink,
@@ -57,6 +58,7 @@ pub fn validate_create_link_role_to_assignee(
     Ok(ValidateCallbackResult::Valid)
 }
 
+///Validates the links that trigger assignees to delete claims to a role
 pub fn validate_delete_link_role_to_assignee(
     action: DeleteLink,
     original_action: CreateLink,
@@ -97,6 +99,7 @@ pub fn validate_delete_link_role_to_assignee(
     Ok(ValidateCallbackResult::Valid)
 }
 
+///Validates links created for unassignments pending (agents that should delete their claims to roles)
 pub fn validate_create_link_pending_unassignments(
     action_hash: &ActionHash,
     action: CreateLink,
@@ -120,6 +123,7 @@ pub fn validate_create_link_pending_unassignments(
     Ok(ValidateCallbackResult::Valid)
 }
 
+///Validates deletions of the pending unassignment links (link integrity and that assignees must be the ones to unassign and delete)
 pub fn validate_delete_link_pending_unassigments(
     action: DeleteLink,
     original_action: CreateLink,

@@ -3,12 +3,14 @@ use roles_integrity::*;
 
 use crate::utils::create_relaxed;
 
+///Claiming a role on agents source chain
 #[hdk_extern]
 pub fn create_role_claim(role_claim: RoleClaim) -> ExternResult<()> {
     create_relaxed(EntryTypes::RoleClaim(role_claim.clone()))?;
     Ok(())
 }
 
+///Get a role claim
 #[hdk_extern]
 pub fn get_role_claim(role_claim_hash: ActionHash) -> ExternResult<Option<Record>> {
     let Some(details) = get_details(role_claim_hash, GetOptions::default())? else {
@@ -22,6 +24,7 @@ pub fn get_role_claim(role_claim_hash: ActionHash) -> ExternResult<Option<Record
     }
 }
 
+///Find undeleted role claims for a role
 #[hdk_extern]
 pub fn query_undeleted_role_claims_for_role(role: String) -> ExternResult<Vec<Record>> {
     let filter = ChainQueryFilter::new()
@@ -60,10 +63,12 @@ pub fn query_undeleted_role_claims_for_role(role: String) -> ExternResult<Vec<Re
     Ok(records_for_role)
 }
 
+///Delete role claim (removing role)
 pub fn delete_role_claim(original_role_claim_hash: ActionHash) -> ExternResult<ActionHash> {
     delete_entry(original_role_claim_hash)
 }
 
+///Find all deletions for role claim
 #[hdk_extern]
 pub fn get_all_deletes_for_role_claim(
     original_role_claim_hash: ActionHash,

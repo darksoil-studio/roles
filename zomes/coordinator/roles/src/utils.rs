@@ -1,6 +1,7 @@
 use hdk::prelude::*;
 use roles_integrity::*;
 
+///Allow other processes to get commited to source chain before commiting the commit
 pub fn create_relaxed(entry_type: EntryTypes) -> ExternResult<()> {
     HDK.with(|h| {
         let index = ScopedEntryDefIndex::try_from(&entry_type)?;
@@ -21,6 +22,7 @@ pub fn create_relaxed(entry_type: EntryTypes) -> ExternResult<()> {
     Ok(())
 }
 
+///Allowing other links to be created and commited before commiting link
 pub fn create_link_relaxed<T, E>(
     base_address: impl Into<AnyLinkableHash>,
     target_address: impl Into<AnyLinkableHash>,
@@ -49,6 +51,7 @@ where
     Ok(())
 }
 
+///Allowing for other operations to commit before committing link deletion
 pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<()> {
     HDK.with(|h| {
         h.borrow()
@@ -58,6 +61,7 @@ pub fn delete_link_relaxed(address: ActionHash) -> ExternResult<()> {
     Ok(())
 }
 
+///Allowing for other operations to commit before deleting an entry
 pub fn delete_relaxed(address: ActionHash) -> ExternResult<()> {
     HDK.with(|h| {
         h.borrow()

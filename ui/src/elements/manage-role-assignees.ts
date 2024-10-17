@@ -5,11 +5,11 @@ import {
 	profilesStoreContext,
 } from '@holochain-open-dev/profiles';
 import '@holochain-open-dev/profiles/dist/elements/profile-list-item.js';
-import { SearchAgents } from '@holochain-open-dev/profiles/dist/elements/search-agents.js';
-import '@holochain-open-dev/profiles/dist/elements/search-agents.js';
-import { SignalWatcher } from '@holochain-open-dev/signals';
+import '@holochain-open-dev/profiles/dist/elements/search-profiles.js';
+import { SearchProfiles } from '@holochain-open-dev/profiles/dist/elements/search-profiles.js';
+import { SignalWatcher, toPromise } from '@holochain-open-dev/signals';
 import { HashType, retype } from '@holochain-open-dev/utils';
-import { AgentPubKey, encodeHashToBase64 } from '@holochain/client';
+import { ActionHash, AgentPubKey, encodeHashToBase64 } from '@holochain/client';
 import { consume } from '@lit/context';
 import { msg, str } from '@lit/localize';
 import { mdiDelete, mdiInformationOutline } from '@mdi/js';
@@ -27,8 +27,8 @@ import { rolesStoreContext } from '../context.js';
 import { RoleConfig, adminRoleConfig } from '../role-config.js';
 import { RolesStore } from '../roles-store.js';
 
-@customElement('role-detail')
-export class RoleDetail extends SignalWatcher(LitElement) {
+@customElement('manage-role-assignees')
+export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 	@property()
 	role!: string;
 
@@ -48,9 +48,22 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 	@state()
 	removingRole = false;
 
-	async addMembersToRole(role: string, assignees: AgentPubKey[]) {
+	async allAgentsForProfiles(
+		profilesHashes: ActionHash[],
+	): Promise<Array<AgentPubKey>> {
+		const allAgentsNested = await Promise.all(
+			profilesHashes.map(profileHash =>
+				toPromise(this.profilesStore.agentsForProfile.get(profileHash)),
+			),
+		);
+
+		return ([] as AgentPubKey[]).concat(...allAgentsNested);
+	}
+
+	async addMembersToRole(role: string, profilesHashes: ActionHash[]) {
 		try {
 			this.committing = true;
+			const assignees = await this.allAgentsForProfiles(profilesHashes);
 			await this.rolesStore.client.assignRole(role, assignees);
 
 			this.dispatchEvent(
@@ -103,7 +116,7 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 	}
 
 	name(agent: AgentPubKey): string | undefined {
-		const profile = this.profilesStore.profiles.get(agent).get();
+		const profile = this.profilesStore.profiles.get(agent).latestVersion.get();
 		if (profile.status !== 'completed') return undefined;
 		return profile.value?.entry.nickname;
 	}
@@ -199,13 +212,13 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 				id="add-members-${roleConfig.role}"
 				.label=${msg(str`Add members as ${roleConfig.plural_name}`)}
 			>
-				<search-agents
-					.excludedAgents=${assignees}
-					id="search-agents-${roleConfig.role}"
+				<search-profiles
+					.excludedProfiles=${assignees}
+					id="search-profiles-${roleConfig.role}"
 					.fieldLabel=${msg('Search Member')}
 					.emptyListPlaceholder=${msg('No members selected yet.')}
-					@agents-changed=${() => this.requestUpdate()}
-				></search-agents>
+					@profiles-changed=${() => this.requestUpdate()}
+				></search-profiles>
 				<sl-button
 					slot="footer"
 					@click=${() =>
@@ -222,18 +235,18 @@ export class RoleDetail extends SignalWatcher(LitElement) {
 					.disabled=${!(
 						(
 							this.shadowRoot?.getElementById(
-								`search-agents-${roleConfig.role}`,
-							) as SearchAgents
+								`search-profiles-${roleConfig.role}`,
+							) as SearchProfiles
 						)?.value.length > 0
 					)}
 					.loading=${this.committing}
 					@click=${() => {
-						const agents = (
+						const profilesHashes = (
 							this.shadowRoot?.getElementById(
-								`search-agents-${roleConfig.role}`,
-							) as SearchAgents
+								`search-profiles-${roleConfig.role}`,
+							) as SearchProfiles
 						).value;
-						this.addMembersToRole(roleConfig.role, agents);
+						this.addMembersToRole(roleConfig.role, profilesHashes);
 					}}
 					>${msg('Add Members')}</sl-button
 				>

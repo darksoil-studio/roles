@@ -1,5 +1,6 @@
 import { NotificationsStore } from '@darksoil-studio/notifications';
 import { wrapPathInSvg } from '@holochain-open-dev/elements/dist/icon.js';
+import { ProfilesStore } from '@holochain-open-dev/profiles';
 import {
 	AsyncComputed,
 	AsyncState,
@@ -14,6 +15,7 @@ import {
 } from '@holochain-open-dev/signals';
 import {
 	HashType,
+	HoloHashMap,
 	LazyHoloHashMap,
 	LazyMap,
 	hashEntry,
@@ -41,6 +43,10 @@ export interface RolesStoreConfig {
 export class RolesStore {
 	private _unassigningRoleCreateLinkHash: ActionHash[] = [];
 	private _claimingRoles: ActionHash[] = [];
+	private _profilesAlreadyNotified = new HoloHashMap<
+		ActionHash,
+		Map<string, 'assigned' | 'unassigned'>
+	>();
 	constructor(
 		public client: RolesClient,
 		public config: RolesStoreConfig,
@@ -237,15 +243,38 @@ export class RolesStore {
 						encodeHashToBase64(this.client.client.myPubKey)
 					)
 						return;
+
+					const profile = await toPromise(
+						notificationsStore.client.profilesStore.agentProfile.get(recipient),
+					);
+
+					if (!profile) return;
+
+					const role = new TextDecoder().decode(
+						signal.action.hashed.content.tag,
+					);
+
+					if (!this._profilesAlreadyNotified.get(profile.profileHash)) {
+						this._profilesAlreadyNotified.set(profile.profileHash, new Map());
+					}
+
+					const alreadyNotifiedTimestamp = this._profilesAlreadyNotified
+						.get(profile.profileHash)
+						.get(role);
+					if (alreadyNotifiedTimestamp === 'assigned') return;
+					this._profilesAlreadyNotified
+						.get(profile.profileHash)
+						.set(role, 'assigned');
+
 					// We just assigned a role: notify the assignee
 					await notificationsStore.client.createNotification({
 						content: encode({
-							role: new TextDecoder().decode(signal.action.hashed.content.tag),
+							role,
 						}),
 						notification_type: NOTIFICATIONS_TYPES.ASSIGNED_ROLE,
 						persistent: false,
 						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients: [recipient],
+						recipients_profiles_hashes: [profile.profileHash],
 					});
 				}
 				if (
@@ -261,18 +290,75 @@ export class RolesStore {
 						encodeHashToBase64(this.client.client.myPubKey)
 					)
 						return;
-					// We just assigned a role: notify the assignee
+
+					const profile = await toPromise(
+						notificationsStore.client.profilesStore.agentProfile.get(recipient),
+					);
+
+					if (!profile) return;
+					const role = new TextDecoder().decode(
+						signal.action.hashed.content.tag,
+					);
+
+					if (!this._profilesAlreadyNotified.get(profile.profileHash)) {
+						this._profilesAlreadyNotified.set(profile.profileHash, new Map());
+					}
+
+					const alreadyNotifiedTimestamp = this._profilesAlreadyNotified
+						.get(profile.profileHash)
+						.get(role);
+					if (alreadyNotifiedTimestamp === 'unassigned') return;
+					this._profilesAlreadyNotified
+						.get(profile.profileHash)
+						.set(role, 'unassigned');
+
+					// We just unassigned a role: notify the assignee
 					await notificationsStore.client.createNotification({
 						content: encode({
-							role: new TextDecoder().decode(signal.action.hashed.content.tag),
+							role,
 						}),
 						notification_type: NOTIFICATIONS_TYPES.UNASSIGNED_ROLE,
 						persistent: false,
 						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients: [recipient],
+						recipients_profiles_hashes: [profile.profileHash],
 					});
 				}
 			});
+
+			// if (profilesStore) {
+			// 	effect(() => {
+			// 		const myRoles = this.rolesForAgent
+			// 			.get(this.client.client.myPubKey)
+			// 			.get();
+			// 		const pendingUnassigments = this.pendingUnassignments.get();
+
+			// 		if (myRoles.status !== 'completed') return ;
+			// 		if (!myRoles.value.includes(adminRoleConfig.role)) return;
+			// 		if (pendingUnassigments.status !== 'completed')
+			// 			return ;
+
+			// 		// I am an admin: watch for new agents for the profiles of each
+
+			// 		for (const role of this.allRoles) {
+			// 			const assignees = this.assignees.get(role).get();
+
+			// 			if (assignees.status !== 'completed') continue;
+
+			// 			const allProfileHashes = joinAsync(
+			// 				assignees.value.map(agent =>
+			// 					profilesStore.agentProfile.get(agent).get(),
+			// 				),
+			// 			);
+			// 			if (allProfileHashes.status !== 'completed') continue;
+
+			// 			const uniqueProfilesHashes = uniquify(
+			// 				allProfileHashes.value
+			// 					.filter(p => p !== undefined)
+			// 					.map(p => p.profileHash),
+			// 			);
+			// 		}
+			// 	});
+			// }
 		}
 	}
 

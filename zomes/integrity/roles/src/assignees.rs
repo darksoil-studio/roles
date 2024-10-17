@@ -52,6 +52,7 @@ pub fn validate_create_link_role_to_assignee(
     }
 
     let was_admin = validate_agent_was_admin_at_the_time(&action.author, action_hash)?;
+
     let ValidateCallbackResult::Valid = was_admin else {
         return Ok(was_admin);
     };

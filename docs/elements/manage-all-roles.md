@@ -1,24 +1,24 @@
-# `<role-detail>`
+# `<manage-all-roles>`
 
 ## Usage
 
 0. If you haven't already, [go through the setup for the module](/setup).
 
-1. Import the `<role-detail>` element somewhere in the javascript side of your web-app like this:
+1. Import the `<manage-all-roles>` element somewhere in the javascript side of your web-app like this:
 
 ```js
-import '@darksoil-studio/roles/dist/elements/role-detail.js'
+import '@darksoil-studio/roles/dist/elements/manage-all-roles.js'
 ```
 
 2. Use it in the html side of your web-app like this:
 
 ```html
-<role-detail>
-</role-detail>
+<manage-all-roles>
+</manage-all-roles>
 ```
 
 > [!WARNING]
-> Like all the elements in this module, `<role-detail>` needs to be placed inside an initialized `<roles-context>`.
+> Like all the elements in this module, `<manage-all-roles>` needs to be placed inside an initialized `<roles-context>`.
 
 ## Demo
 
@@ -27,7 +27,10 @@ Here is an interactive demo of the element:
 <element-demo>
 </element-demo>
 
-
+```mermaid
+graph TD;
+  A-->B
+```
 
 <script setup>
 import { onMounted } from "vue";
@@ -48,7 +51,7 @@ onMounted(async () => {
   await import('@api-viewer/demo/lib/api-demo.js');
   await import('@holochain-open-dev/profiles/dist/elements/profiles-context.js');
   if (!customElements.get('roles-context')) await import('../../ui/src/elements/roles-context.ts');
-  if (!customElements.get('role-detail')) await import('../../ui/src/elements/role-detail.ts');
+  if (!customElements.get('manage-all-roles')) await import('../../ui/src/elements/manage-all-roles.ts');
 
   const profiles = await demoProfiles();
 
@@ -77,9 +80,9 @@ onMounted(async () => {
   render(html`
     <profiles-context .store=${profilesStore}>
       <roles-context .store=${store}>
-        <api-demo src="custom-elements.json" only="role-detail" exclude-knobs="store">
-          <template data-element="role-detail" data-target="host">
-            <role-detail ></role-detail>
+        <api-demo src="custom-elements.json" only="manage-all-roles" exclude-knobs="store">
+          <template data-element="manage-all-roles" data-target="host">
+            <manage-all-roles ></manage-all-roles>
           </template>
         </api-demo>
       </roles-context>
@@ -92,7 +95,7 @@ onMounted(async () => {
 
 ## API Reference
 
-`<role-detail>` is a [custom element](https://web.dev/articles/custom-elements-v1), which means that it can be used in any web app or website. Here is the reference for its API:
+`<manage-all-roles>` is a [custom element](https://web.dev/articles/custom-elements-v1), which means that it can be used in any web app or website. Here is the reference for its API:
 
-<api-docs src="custom-elements.json" only="role-detail">
+<api-docs src="custom-elements.json" only="manage-all-roles">
 </api-docs>

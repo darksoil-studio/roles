@@ -1,24 +1,24 @@
-# `<all-roles>`
+# `<manage-role-assignees>`
 
 ## Usage
 
 0. If you haven't already, [go through the setup for the module](/setup).
 
-1. Import the `<all-roles>` element somewhere in the javascript side of your web-app like this:
+1. Import the `<manage-role-assignees>` element somewhere in the javascript side of your web-app like this:
 
 ```js
-import '@darksoil-studio/roles/dist/elements/all-roles.js'
+import '@darksoil-studio/roles/dist/elements/manage-role-assignees.js'
 ```
 
 2. Use it in the html side of your web-app like this:
 
 ```html
-<all-roles>
-</all-roles>
+<manage-role-assignees>
+</manage-role-assignees>
 ```
 
 > [!WARNING]
-> Like all the elements in this module, `<all-roles>` needs to be placed inside an initialized `<roles-context>`.
+> Like all the elements in this module, `<manage-role-assignees>` needs to be placed inside an initialized `<roles-context>`.
 
 ## Demo
 
@@ -27,10 +27,7 @@ Here is an interactive demo of the element:
 <element-demo>
 </element-demo>
 
-```mermaid
-graph TD;
-  A-->B
-```
+
 
 <script setup>
 import { onMounted } from "vue";
@@ -51,7 +48,7 @@ onMounted(async () => {
   await import('@api-viewer/demo/lib/api-demo.js');
   await import('@holochain-open-dev/profiles/dist/elements/profiles-context.js');
   if (!customElements.get('roles-context')) await import('../../ui/src/elements/roles-context.ts');
-  if (!customElements.get('all-roles')) await import('../../ui/src/elements/all-roles.ts');
+  if (!customElements.get('manage-role-assignees')) await import('../../ui/src/elements/manage-role-assignees.ts');
 
   const profiles = await demoProfiles();
 
@@ -80,9 +77,9 @@ onMounted(async () => {
   render(html`
     <profiles-context .store=${profilesStore}>
       <roles-context .store=${store}>
-        <api-demo src="custom-elements.json" only="all-roles" exclude-knobs="store">
-          <template data-element="all-roles" data-target="host">
-            <all-roles ></all-roles>
+        <api-demo src="custom-elements.json" only="manage-role-assignees" exclude-knobs="store">
+          <template data-element="manage-role-assignees" data-target="host">
+            <manage-role-assignees ></manage-role-assignees>
           </template>
         </api-demo>
       </roles-context>
@@ -95,7 +92,7 @@ onMounted(async () => {
 
 ## API Reference
 
-`<all-roles>` is a [custom element](https://web.dev/articles/custom-elements-v1), which means that it can be used in any web app or website. Here is the reference for its API:
+`<manage-role-assignees>` is a [custom element](https://web.dev/articles/custom-elements-v1), which means that it can be used in any web app or website. Here is the reference for its API:
 
-<api-docs src="custom-elements.json" only="all-roles">
+<api-docs src="custom-elements.json" only="manage-role-assignees">
 </api-docs>

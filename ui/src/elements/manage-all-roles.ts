@@ -8,14 +8,14 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { rolesStoreContext } from '../context.js';
 import { adminRoleConfig } from '../role-config.js';
 import { RolesStore } from '../roles-store.js';
-import './role-detail.js';
+import './manage-role-assignees.js';
 
 /**
- * @element all-roles
+ * @element manage-all-roles
  */
 @localized()
-@customElement('all-roles')
-export class AllRoles extends SignalWatcher(LitElement) {
+@customElement('manage-all-roles')
+export class ManageAllRoles extends SignalWatcher(LitElement) {
 	/**
 	 * @internal
 	 */
@@ -26,7 +26,9 @@ export class AllRoles extends SignalWatcher(LitElement) {
 		return html`
 			<div class="column" style="gap: 32px; flex: 1">
 				${this.rolesStore.allRoles.map(
-					role => html` <role-detail .role=${role}></role-detail> `,
+					role => html`
+						<manage-role-assignees .role=${role}></manage-role-assignees>
+					`,
 				)}
 			</div>
 		`;

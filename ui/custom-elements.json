@@ -566,6 +566,12 @@
             },
             {
               "kind": "field",
+              "name": "_profilesAlreadyNotified",
+              "privacy": "private",
+              "default": "new HoloHashMap<\n\t\tActionHash,\n\t\tMap<string, 'assigned' | 'unassigned'>\n\t>()"
+            },
+            {
+              "kind": "field",
               "name": "myRoleClaims",
               "default": "new LazyMap((role: string) =>\n\t\tqueryLiveEntriesSignal(\n\t\t\tthis.client,\n\t\t\t() => this.client.queryUndeletedRoleClaimsForRole(role),\n\t\t\t'RoleClaim',\n\t\t),\n\t)",
               "description": "Role Claim"
@@ -778,12 +784,12 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/elements/all-roles.ts",
+      "path": "src/elements/manage-all-roles.ts",
       "declarations": [
         {
           "kind": "class",
           "description": "",
-          "name": "AllRoles",
+          "name": "ManageAllRoles",
           "members": [],
           "mixins": [
             {
@@ -795,37 +801,37 @@
             "name": "LitElement",
             "package": "lit"
           },
-          "tagName": "all-roles",
+          "tagName": "manage-all-roles",
           "customElement": true
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "AllRoles",
+          "name": "ManageAllRoles",
           "declaration": {
-            "name": "AllRoles",
-            "module": "src/elements/all-roles.ts"
+            "name": "ManageAllRoles",
+            "module": "src/elements/manage-all-roles.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "all-roles",
+          "name": "manage-all-roles",
           "declaration": {
-            "name": "AllRoles",
-            "module": "src/elements/all-roles.ts"
+            "name": "ManageAllRoles",
+            "module": "src/elements/manage-all-roles.ts"
           }
         }
       ]
     },
     {
       "kind": "javascript-module",
-      "path": "src/elements/role-detail.ts",
+      "path": "src/elements/manage-role-assignees.ts",
       "declarations": [
         {
           "kind": "class",
           "description": "",
-          "name": "RoleDetail",
+          "name": "ManageRoleAssignees",
           "members": [
             {
               "kind": "field",
@@ -861,6 +867,23 @@
             },
             {
               "kind": "method",
+              "name": "allAgentsForProfiles",
+              "return": {
+                "type": {
+                  "text": "Promise<Array<AgentPubKey>>"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "profilesHashes",
+                  "type": {
+                    "text": "ActionHash[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
               "name": "addMembersToRole",
               "parameters": [
                 {
@@ -870,9 +893,9 @@
                   }
                 },
                 {
-                  "name": "assignees",
+                  "name": "profilesHashes",
                   "type": {
-                    "text": "AgentPubKey[]"
+                    "text": "ActionHash[]"
                   }
                 }
               ]
@@ -1005,25 +1028,25 @@
             "name": "LitElement",
             "package": "lit"
           },
-          "tagName": "role-detail",
+          "tagName": "manage-role-assignees",
           "customElement": true
         }
       ],
       "exports": [
         {
           "kind": "js",
-          "name": "RoleDetail",
+          "name": "ManageRoleAssignees",
           "declaration": {
-            "name": "RoleDetail",
-            "module": "src/elements/role-detail.ts"
+            "name": "ManageRoleAssignees",
+            "module": "src/elements/manage-role-assignees.ts"
           }
         },
         {
           "kind": "custom-element-definition",
-          "name": "role-detail",
+          "name": "manage-role-assignees",
           "declaration": {
-            "name": "RoleDetail",
-            "module": "src/elements/role-detail.ts"
+            "name": "ManageRoleAssignees",
+            "module": "src/elements/manage-role-assignees.ts"
           }
         }
       ]
@@ -1169,6 +1192,106 @@
           "declaration": {
             "name": "RolesForAgent",
             "module": "src/elements/roles-for-agent.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/elements/roles-for-profile.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "RolesForProfile",
+          "members": [
+            {
+              "kind": "field",
+              "name": "profileHash",
+              "type": {
+                "text": "ActionHash"
+              },
+              "attribute": "profileHash"
+            },
+            {
+              "kind": "field",
+              "name": "rolesStore",
+              "type": {
+                "text": "RolesStore"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "roleSingularName",
+              "parameters": [
+                {
+                  "name": "role",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "renderRoles",
+              "parameters": [
+                {
+                  "name": "roles",
+                  "type": {
+                    "text": "string[]"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "roles",
+              "return": {
+                "type": {
+                  "text": "AsyncResult<string[]>"
+                }
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "profileHash",
+              "type": {
+                "text": "ActionHash"
+              },
+              "fieldName": "profileHash"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "SignalWatcher",
+              "package": "@holochain-open-dev/signals"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "roles-for-profile",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "RolesForProfile",
+          "declaration": {
+            "name": "RolesForProfile",
+            "module": "src/elements/roles-for-profile.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "roles-for-profile",
+          "declaration": {
+            "name": "RolesForProfile",
+            "module": "src/elements/roles-for-profile.ts"
           }
         }
       ]

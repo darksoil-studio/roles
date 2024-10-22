@@ -106,8 +106,8 @@ importers:
   ui:
     dependencies:
       '@darksoil-studio/notifications':
-        specifier: github:darksoil-studio/notifications#edaacd277d5e8bf4217f2f43971294ef72f5da35&path:ui
-        version: https://codeload.github.com/darksoil-studio/notifications/tar.gz/edaacd277d5e8bf4217f2f43971294ef72f5da35#path:ui(@types/react@18.3.11)
+        specifier: github:darksoil-studio/notifications#f10f69ab644d6d8b4078b0a44ad3bba8299f8042&path:ui
+        version: https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui(@types/react@18.3.11)
       '@holochain-open-dev/elements':
         specifier: ^0.300.1
         version: 0.300.1(@types/react@18.3.11)
@@ -353,8 +353,8 @@ packages:
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
-  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/edaacd277d5e8bf4217f2f43971294ef72f5da35#path:ui':
-    resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/notifications/tar.gz/edaacd277d5e8bf4217f2f43971294ef72f5da35}
+  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui':
+    resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042}
     version: 0.1.0
 
   '@docsearch/css@3.6.2':
@@ -3116,7 +3116,7 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/edaacd277d5e8bf4217f2f43971294ef72f5da35#path:ui(@types/react@18.3.11)':
+  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui(@types/react@18.3.11)':
     dependencies:
       '@holochain-open-dev/elements': 0.300.1(@types/react@18.3.11)
       '@holochain-open-dev/profiles': https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6#path:ui(@types/react@18.3.11)

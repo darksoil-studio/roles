@@ -13,6 +13,9 @@ hdk = { workspace = true }
 serde = { workspace = true }
 
 roles_integrity = { path = "../../integrity/roles", package = "roles_integrity" }
+hc_zome_trait_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "main" }
+hc_zome_traits = { git = "https://github.com/holochain-open-dev/zome-traits", branch = "main" }
+xliff = { git = "https://github.com/kkostov/hb-rs-xliff", branch = "master" }
 
 [dev-dependencies]
 fixt = "0.3.2"

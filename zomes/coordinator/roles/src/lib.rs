@@ -4,8 +4,14 @@ use role_claim::create_role_claim;
 use roles_integrity::*;
 
 pub mod assignees;
+pub mod notifications;
 pub mod role_claim;
 pub mod utils;
+
+#[implemented_zome_traits]
+pub enum ZomeTraits {
+    Notifications(RolesNotifications),
+}
 
 ///initial function called when entering happ (if Agent is progenitor then Admin role is claimed)
 #[hdk_extern]

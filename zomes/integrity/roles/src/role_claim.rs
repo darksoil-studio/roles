@@ -33,18 +33,12 @@ pub fn validate_create_role_claim(
     let role_claim_creates: Vec<(ActionHash, RoleClaim)> = activity
         .iter()
         .filter_map(|activity| match &activity.action.hashed.content {
-            Action::Create(create) => Some((
-                activity.action.hashed.hash.clone(),
-                create.clone(),
-                activity.cached_entry.clone(),
-            )),
+            Action::Create(create) => Some((activity.action.hashed.hash.clone(), create.clone())),
             _ => None,
         })
-        .filter(|(_hash, create, _cached_entry)| create.entry_type.eq(&role_claim_entry_type))
-        .map(|(hash, _create, cached_entry)| {
-            let entry = cached_entry.ok_or(wasm_error!(WasmErrorInner::Guest(format!(
-                "cached_entry not included in RoleClaim agent activity"
-            ))))?;
+        .filter(|(_hash, create)| create.entry_type.eq(&role_claim_entry_type))
+        .map(|(hash, create)| {
+            let entry = must_get_entry(create.entry_hash)?;
             let role_claim = RoleClaim::try_from(entry)?;
             Ok((hash, role_claim))
         })
@@ -186,7 +180,7 @@ fn validate_linked_agent_did_not_already_delete_this_role_claim(
 
     let agent_to_profile_link_record = must_get_valid_record(create_link_hash.clone())?;
 
-    let filter = ChainFilter::new(create_link_hash);
+    let filter = ChainFilter::new(create_link_hash).include_cached_entries();
     let activity = must_get_agent_activity(
         agent_to_profile_link_record.action().author().clone(),
         filter,
@@ -197,18 +191,12 @@ fn validate_linked_agent_did_not_already_delete_this_role_claim(
     let role_claim_creates: Vec<(ActionHash, RoleClaim)> = activity
         .iter()
         .filter_map(|activity| match &activity.action.hashed.content {
-            Action::Create(create) => Some((
-                activity.action.hashed.hash.clone(),
-                create.clone(),
-                activity.cached_entry.clone(),
-            )),
+            Action::Create(create) => Some((activity.action.hashed.hash.clone(), create.clone())),
             _ => None,
         })
-        .filter(|(_hash, create, _cached_entry)| create.entry_type.eq(&role_claim_entry_type))
-        .map(|(hash, _create, cached_entry)| {
-            let entry = cached_entry.ok_or(wasm_error!(WasmErrorInner::Guest(format!(
-                "cached_entry not included in RoleClaim agent activity"
-            ))))?;
+        .filter(|(_hash, create)| create.entry_type.eq(&role_claim_entry_type))
+        .map(|(hash, create)| {
+            let entry = must_get_entry(create.entry_hash)?;
             let role_claim = RoleClaim::try_from(entry)?;
             Ok((hash, role_claim))
         })

@@ -29,7 +29,7 @@ pub fn assign_role_to_single_assignee(
     path.ensure()?;
     create_link(
         path.path_entry_hash()?,
-        assignee,
+        assignee_profile_hash,
         LinkTypes::RoleToAssignee,
         role,
     )

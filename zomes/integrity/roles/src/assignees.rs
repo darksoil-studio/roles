@@ -103,15 +103,13 @@ pub fn validate_create_link_role_to_assignee(
     Ok(ValidateCallbackResult::Valid)
 }
 
-///Validates the links that trigger assignees to delete claims to a role
 pub fn validate_delete_link_role_to_assignee(
     action_hash: ActionHash,
     action: DeleteLink,
-    original_action_hash: ActionHash,
     original_action: CreateLink,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
-    tag: LinkTag,
+    _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     let Some(assignee_profile_hash) = original_action.target_address.into_action_hash() else {
         return Ok(ValidateCallbackResult::Invalid(String::from(
@@ -156,7 +154,7 @@ pub fn validate_delete_link_role_to_assignee(
 
     if all_role_claims_deleted_proof
         .assign_role_create_link_hash
-        .ne(&original_action_hash)
+        .ne(&action.link_add_address)
     {
         return Ok(ValidateCallbackResult::Invalid(
             String::from("Delete role assignment link must be committed immediately after creating an AllRoleClaimsDeletedProof entry that references it.")

@@ -1,6 +1,9 @@
 use hdi::prelude::*;
+use profiles_types::Profile;
 
-use crate::{validate_agent_was_admin_at_the_time, LinkTypes};
+use crate::{
+    profiles::validate_profile_for_agent, validate_agent_was_admin_at_the_time, LinkTypes,
+};
 
 ///Validates links created for unassignments pending (agents that should delete their claims to roles)
 pub fn validate_create_link_pending_unassignments(
@@ -8,15 +11,29 @@ pub fn validate_create_link_pending_unassignments(
     action: CreateLink,
     _base_address: AnyLinkableHash,
     target_address: AnyLinkableHash,
-    _tag: LinkTag,
+    tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     // Check the entry type for the given action hash
-    let _assignee =
+    let assignee_profile_hash =
         target_address
-            .into_agent_pub_key()
+            .into_action_hash()
             .ok_or(wasm_error!(WasmErrorInner::Guest(
                 "No action hash associated with link".to_string()
             )))?;
+
+    let Ok(_role) = String::from_utf8(tag.0) else {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "RoleToAssignee links must contain the role in their LinkTag",
+        )));
+    };
+
+    let profile_record = must_get_valid_record(assignee_profile_hash)?;
+    let Some(entry) = profile_record.entry().as_option() else {
+        return Ok(ValidateCallbackResult::Invalid(format!(
+            "The target of a PendingUnassignment link must be a profile record with an entry"
+        )));
+    };
+    let _profile = Profile::try_from(entry.clone())?;
 
     let was_admin = validate_agent_was_admin_at_the_time(&action.author, action_hash)?;
 
@@ -28,22 +45,25 @@ pub fn validate_create_link_pending_unassignments(
 
 ///Validates deletions of the pending unassignment links (link integrity and that assignees must be the ones to unassign and delete)
 pub fn validate_delete_link_pending_unassigments(
+    action_hash: ActionHash,
     action: DeleteLink,
     original_action: CreateLink,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
     tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
-    let Some(assignee) = original_action.target_address.into_agent_pub_key() else {
+    let Some(assignee_profile_hash) = original_action.target_address.into_action_hash() else {
         return Ok(ValidateCallbackResult::Invalid(String::from(
             "RoleToAssignee must point to an AgentPubKey",
         )));
     };
-    if !action.author.eq(&assignee) {
+
+    let result = validate_profile_for_agent(action.author, action_hash, assignee_profile_hash)?;
+    let ValidateCallbackResult::Valid = result else {
         return Ok(ValidateCallbackResult::Invalid(String::from(
             "Only assignees can unassign themselves",
         )));
-    }
+    };
 
     let Ok(role) = String::from_utf8(tag.0) else {
         return Ok(ValidateCallbackResult::Invalid(String::from(

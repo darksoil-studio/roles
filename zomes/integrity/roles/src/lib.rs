@@ -28,7 +28,6 @@ pub use all_role_claims_deleted_proof::*;
 #[hdk_entry_types]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
-    #[entry_type(cache_at_agent_activity = true)]
     RoleClaim(RoleClaim),
     AllRoleClaimsDeletedProof(AllRoleClaimsDeletedProof),
 }
@@ -270,6 +269,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 tag,
             ),
             LinkTypes::PendingUnassignments => validate_delete_link_pending_unassigments(
+                action_hash(&op).clone(),
                 action,
                 original_action,
                 base_address,
@@ -504,6 +504,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         create_link.tag,
                     ),
                     LinkTypes::PendingUnassignments => validate_delete_link_pending_unassigments(
+                        action_hash(&op).clone(),
                         action,
                         create_link.clone(),
                         base_address,

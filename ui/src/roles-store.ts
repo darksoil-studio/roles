@@ -161,74 +161,74 @@ export class RolesStore {
 		});
 
 		if (notificationsStore) {
-			notificationsStore.addTypes({
-				[NOTIFICATIONS_TYPES.ASSIGNED_ROLE]: {
-					name: msg('Role assigned'),
-					description: msg('An administrator assigned a role to you'),
-					title(notificationGroup) {
-						return new AsyncState({
-							status: 'completed',
-							value: '',
-						});
-					},
-					contents(notification) {
-						const role: string = (decode(notification.entry.content) as any)
-							.role;
-						const roleConfig =
-							role === adminRoleConfig.role
-								? adminRoleConfig
-								: config.roles_config.find(
-										roleConfig => roleConfig.role === role,
-									);
+			// notificationsStore.addTypes({
+			// 	[NOTIFICATIONS_TYPES.ASSIGNED_ROLE]: {
+			// 		name: msg('Role assigned'),
+			// 		description: msg('An administrator assigned a role to you'),
+			// 		title(notificationGroup) {
+			// 			return new AsyncState({
+			// 				status: 'completed',
+			// 				value: '',
+			// 			});
+			// 		},
+			// 		contents(notification) {
+			// 			const role: string = (decode(notification.entry.content) as any)
+			// 				.role;
+			// 			const roleConfig =
+			// 				role === adminRoleConfig.role
+			// 					? adminRoleConfig
+			// 					: config.roles_config.find(
+			// 							roleConfig => roleConfig.role === role,
+			// 						);
 
-						return new AsyncState({
-							status: 'completed',
-							value: {
-								body: msg(
-									str`You have been assigned the ${roleConfig?.singular_name} role.`,
-								),
-								iconSrc: wrapPathInSvg(mdiSmartCard),
-							},
-						});
-					},
-					onClick(notificationGroup) {
-						// Do nothing
-					},
-				},
-				[NOTIFICATIONS_TYPES.UNASSIGNED_ROLE]: {
-					name: msg('Role removed'),
-					description: msg('An administrator removed a role from you'),
-					title(notificationGroup) {
-						return new AsyncState({
-							status: 'completed',
-							value: '',
-						});
-					},
-					contents(notification) {
-						const role: string = (decode(notification.entry.content) as any)
-							.role;
-						const roleConfig =
-							role === adminRoleConfig.role
-								? adminRoleConfig
-								: config.roles_config.find(
-										roleConfig => roleConfig.role === role,
-									);
+			// 			return new AsyncState({
+			// 				status: 'completed',
+			// 				value: {
+			// 					body: msg(
+			// 						str`You have been assigned the ${roleConfig?.singular_name} role.`,
+			// 					),
+			// 					iconSrc: wrapPathInSvg(mdiSmartCard),
+			// 				},
+			// 			});
+			// 		},
+			// 		onClick(notificationGroup) {
+			// 			// Do nothing
+			// 		},
+			// 	},
+			// 	[NOTIFICATIONS_TYPES.UNASSIGNED_ROLE]: {
+			// 		name: msg('Role removed'),
+			// 		description: msg('An administrator removed a role from you'),
+			// 		title(notificationGroup) {
+			// 			return new AsyncState({
+			// 				status: 'completed',
+			// 				value: '',
+			// 			});
+			// 		},
+			// 		contents(notification) {
+			// 			const role: string = (decode(notification.entry.content) as any)
+			// 				.role;
+			// 			const roleConfig =
+			// 				role === adminRoleConfig.role
+			// 					? adminRoleConfig
+			// 					: config.roles_config.find(
+			// 							roleConfig => roleConfig.role === role,
+			// 						);
 
-						return new AsyncState({
-							status: 'completed',
-							value: {
-								body: msg(
-									str`An administrator removed your ${roleConfig?.singular_name} role.`,
-								),
-								iconSrc: wrapPathInSvg(mdiSmartCardOff),
-							},
-						});
-					},
-					onClick(notificationGroup) {
-						// Do nothing
-					},
-				},
-			});
+			// 			return new AsyncState({
+			// 				status: 'completed',
+			// 				value: {
+			// 					body: msg(
+			// 						str`An administrator removed your ${roleConfig?.singular_name} role.`,
+			// 					),
+			// 					iconSrc: wrapPathInSvg(mdiSmartCardOff),
+			// 				},
+			// 			});
+			// 		},
+			// 		onClick(notificationGroup) {
+			// 			// Do nothing
+			// 		},
+			// 	},
+			// });
 			client.onSignal(async signal => {
 				if (
 					signal.type === 'LinkCreated' &&

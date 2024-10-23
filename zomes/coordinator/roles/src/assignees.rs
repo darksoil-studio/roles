@@ -10,21 +10,20 @@ use crate::{
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AssignRoleInput {
     pub role: String,
-    pub assignees: Vec<AgentPubKey>,
+    pub assignees_profiles_hashes: Vec<ActionHash>,
 }
 
 ///Inpur structure for unassigning roles
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RequestUnassignRoleInput {
     pub role: String,
-    pub assignee: AgentPubKey,
+    pub assignee_profile_hash: ActionHash,
 }
 
-
 /// Assign role function used in init function
-pub fn assign_role_to_single_agent(
+pub fn assign_role_to_single_assignee(
     role: String,
-    assignee: AgentPubKey,
+    assignee_profile_hash: ActionHash,
 ) -> ExternResult<ActionHash> {
     let path = role_path(&role)?;
     path.ensure()?;
@@ -36,13 +35,13 @@ pub fn assign_role_to_single_agent(
     )
 }
 
-///Assigning roles to agents 
+///Assigning roles to agents
 #[hdk_extern]
 pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     let path = role_path(&input.role)?;
     path.ensure()?;
 
-    for assignee in input.assignees {
+    for assignee in input.assignees_profiles_hashes {
         let assign_role_create_link_hash = create_link(
             path.path_entry_hash()?,
             assignee.clone(),
@@ -70,7 +69,7 @@ fn pending_unassignments_path() -> Path {
 pub fn request_unassign_role(input: RequestUnassignRoleInput) -> ExternResult<()> {
     create_link(
         pending_unassignments_path().path_entry_hash()?,
-        input.assignee.clone(),
+        input.assignee_profile_hash.clone(),
         LinkTypes::PendingUnassignments,
         input.role,
     )?;

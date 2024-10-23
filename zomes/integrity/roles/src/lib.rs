@@ -1,5 +1,7 @@
 use hdi::prelude::*;
 
+pub mod profiles;
+
 pub mod role_claim;
 pub use role_claim::*;
 
@@ -15,6 +17,11 @@ pub use progenitors::*;
 pub mod assignees;
 pub use assignees::*;
 
+pub mod pending_unassignments;
+pub use pending_unassignments::*;
+
+pub mod all_role_claims_deleted_proof;
+pub use all_role_claims_deleted_proof::*;
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -35,13 +42,13 @@ pub enum LinkTypes {
 
 #[hdk_extern]
 pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
-    // let progenitors = progenitors(())?;
+    let progenitors = progenitors(())?;
 
-    // if progenitors.len() == 0 {
-    //     return Ok(ValidateCallbackResult::Invalid(String::from(
-    //         "This DNA can't have no progenitors",
-    //     )));
-    // }
+    if progenitors.len() == 0 {
+        return Ok(ValidateCallbackResult::Invalid(String::from(
+            "This DNA can't have no progenitors",
+        )));
+    }
 
     Ok(ValidateCallbackResult::Valid)
 }
@@ -72,16 +79,20 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
     match op.flattened::<EntryTypes, LinkTypes>()? {
         FlatOp::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry { app_entry, action } => match app_entry {
-                EntryTypes::RoleClaim(role_claim) => {
-                    validate_create_role_claim(EntryCreationAction::Create(action), role_claim)
-                }
+                EntryTypes::RoleClaim(role_claim) => validate_create_role_claim(
+                    action_hash(&op).clone(),
+                    EntryCreationAction::Create(action),
+                    role_claim,
+                ),
             },
             OpEntry::UpdateEntry {
                 app_entry, action, ..
             } => match app_entry {
-                EntryTypes::RoleClaim(role_claim) => {
-                    validate_create_role_claim(EntryCreationAction::Update(action), role_claim)
-                }
+                EntryTypes::RoleClaim(role_claim) => validate_create_role_claim(
+                    action_hash(&op).clone(),
+                    EntryCreationAction::Update(action),
+                    role_claim,
+                ),
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
@@ -209,6 +220,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 tag,
             ),
             LinkTypes::RoleToAssignee => validate_delete_link_role_to_assignee(
+                action_hash(&op).clone(),
                 action,
                 original_action,
                 base_address,
@@ -225,9 +237,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
         },
         FlatOp::StoreRecord(store_record) => match store_record {
             OpRecord::CreateEntry { app_entry, action } => match app_entry {
-                EntryTypes::RoleClaim(role_claim) => {
-                    validate_create_role_claim(EntryCreationAction::Create(action), role_claim)
-                }
+                EntryTypes::RoleClaim(role_claim) => validate_create_role_claim(
+                    action_hash(&op).clone(),
+                    EntryCreationAction::Create(action),
+                    role_claim,
+                ),
             },
             OpRecord::UpdateEntry {
                 original_action_hash,
@@ -250,6 +264,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 match app_entry {
                     EntryTypes::RoleClaim(role_claim) => {
                         let result = validate_create_role_claim(
+                            action_hash(&op).clone(),
                             EntryCreationAction::Update(action.clone()),
                             role_claim.clone(),
                         )?;
@@ -388,6 +403,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         create_link.tag,
                     ),
                     LinkTypes::RoleToAssignee => validate_delete_link_role_to_assignee(
+                        action_hash(&op).clone(),
                         action,
                         create_link.clone(),
                         base_address,

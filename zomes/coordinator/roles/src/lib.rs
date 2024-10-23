@@ -1,4 +1,4 @@
-use assignees::assign_role_to_single_agent;
+use assignees::assign_role_to_single_assignee;
 use hc_zome_trait_notifications::NotificationsZomeTrait;
 use hc_zome_traits::implemented_zome_traits;
 use hdk::prelude::*;
@@ -24,8 +24,10 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let progenitors = progenitors(())?;
 
     if progenitors.contains(&agent_info.agent_initial_pubkey) {
-        let create_link_action_hash =
-            assign_role_to_single_agent(ADMIN_ROLE.to_string(), agent_info.agent_initial_pubkey)?;
+        let create_link_action_hash = assign_role_to_single_assignee(
+            ADMIN_ROLE.to_string(),
+            agent_info.agent_initial_pubkey,
+        )?;
         create_role_claim(RoleClaim {
             role: ADMIN_ROLE.to_string(),
             assign_role_create_link_hash: create_link_action_hash,

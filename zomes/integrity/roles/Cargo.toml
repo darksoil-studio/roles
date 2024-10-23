@@ -12,3 +12,4 @@ hdi = { workspace = true }
 
 serde = { workspace = true }
 roles_types = {path ="../../../crates/roles_types"}
+profiles_types = { git = "https://github.com/holochain-open-dev/profiles", branch = "nixify" }

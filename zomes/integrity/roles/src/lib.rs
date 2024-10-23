@@ -28,7 +28,9 @@ pub use all_role_claims_deleted_proof::*;
 #[hdk_entry_types]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
+    #[entry_type(cache_at_agent_activity = true)]
     RoleClaim(RoleClaim),
+    AllRoleClaimsDeletedProof(AllRoleClaimsDeletedProof),
 }
 
 ///LinkTypes available in the module
@@ -84,6 +86,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryCreationAction::Create(action),
                     role_claim,
                 ),
+                EntryTypes::AllRoleClaimsDeletedProof(all_role_claims_deleted_proof) => {
+                    validate_create_all_role_claims_deleted_proof(
+                        action_hash(&op).clone(),
+                        EntryCreationAction::Create(action),
+                        all_role_claims_deleted_proof,
+                    )
+                }
             },
             OpEntry::UpdateEntry {
                 app_entry, action, ..
@@ -93,6 +102,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryCreationAction::Update(action),
                     role_claim,
                 ),
+                EntryTypes::AllRoleClaimsDeletedProof(all_role_claims_deleted_proof) => {
+                    validate_create_all_role_claims_deleted_proof(
+                        action_hash(&op).clone(),
+                        EntryCreationAction::Update(action),
+                        all_role_claims_deleted_proof,
+                    )
+                }
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
@@ -126,6 +142,25 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                             role_claim,
                             original_create_action,
                             original_role_claim,
+                        )
+                    }
+                    EntryTypes::AllRoleClaimsDeletedProof(all_role_claims_deleted_proof) => {
+                        let original_app_entry =
+                            must_get_valid_record(action.clone().original_action_address)?;
+                        let original_all_role_claims_deleted_proof =
+                            match AllRoleClaimsDeletedProof::try_from(original_app_entry) {
+                                Ok(entry) => entry,
+                                Err(e) => {
+                                    return Ok(ValidateCallbackResult::Invalid(format!(
+                                        "Expected to get RoleClaim from Record: {e:?}"
+                                    )));
+                                }
+                            };
+                        validate_update_all_role_claims_deleted_proof(
+                            action,
+                            all_role_claims_deleted_proof,
+                            original_create_action,
+                            original_all_role_claims_deleted_proof,
                         )
                     }
                 }
@@ -177,6 +212,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     original_action,
                     original_role_claim,
                 ),
+                EntryTypes::AllRoleClaimsDeletedProof(original_all_role_claims_deleted_proof) => {
+                    validate_delete_all_role_claims_deleted_proof(
+                        delete_entry.clone().action,
+                        original_action,
+                        original_all_role_claims_deleted_proof,
+                    )
+                }
             }
         }
         FlatOp::RegisterCreateLink {
@@ -242,6 +284,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryCreationAction::Create(action),
                     role_claim,
                 ),
+                EntryTypes::AllRoleClaimsDeletedProof(all_role_claims_deleted_proof) => {
+                    validate_create_all_role_claims_deleted_proof(
+                        action_hash(&op).clone(),
+                        EntryCreationAction::Create(action),
+                        all_role_claims_deleted_proof,
+                    )
+                }
             },
             OpRecord::UpdateEntry {
                 original_action_hash,
@@ -289,6 +338,43 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                                 role_claim,
                                 original_action,
                                 original_role_claim,
+                            )
+                        } else {
+                            Ok(result)
+                        }
+                    }
+                    EntryTypes::AllRoleClaimsDeletedProof(all_role_claims_deleted_proof) => {
+                        let result = validate_create_all_role_claims_deleted_proof(
+                            action_hash(&op).clone(),
+                            EntryCreationAction::Update(action.clone()),
+                            all_role_claims_deleted_proof.clone(),
+                        )?;
+                        if let ValidateCallbackResult::Valid = result {
+                            let original_all_role_claims_deleted_proof: Option<
+                                AllRoleClaimsDeletedProof,
+                            > = original_record
+                                .entry()
+                                .to_app_option()
+                                .map_err(|e| wasm_error!(e))?;
+                            let original_all_role_claims_deleted_proof =
+                                match original_all_role_claims_deleted_proof {
+                                    Some(all_role_claims_deleted_proof) => {
+                                        all_role_claims_deleted_proof
+                                    }
+                                    None => {
+                                        return Ok(
+                                            ValidateCallbackResult::Invalid(
+                                                "The updated entry type must be the same as the original entry type"
+                                                    .to_string(),
+                                            ),
+                                        );
+                                    }
+                                };
+                            validate_update_all_role_claims_deleted_proof(
+                                action,
+                                all_role_claims_deleted_proof,
+                                original_action,
+                                original_all_role_claims_deleted_proof,
                             )
                         } else {
                             Ok(result)
@@ -346,6 +432,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                     EntryTypes::RoleClaim(original_role_claim) => {
                         validate_delete_role_claim(action, original_action, original_role_claim)
                     }
+                    EntryTypes::AllRoleClaimsDeletedProof(
+                        original_all_role_claims_deleted_proof,
+                    ) => validate_delete_all_role_claims_deleted_proof(
+                        action,
+                        original_action,
+                        original_all_role_claims_deleted_proof,
+                    ),
                 }
             }
             OpRecord::CreateLink {

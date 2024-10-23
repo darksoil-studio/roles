@@ -1,8 +1,9 @@
 use hdi::prelude::*;
 
 use crate::{
-    profiles::validate_profile_for_agent, progenitors, role_path,
-    validate_agent_was_admin_at_the_time, LinkTypes, RoleClaim, ADMIN_ROLE,
+    all_role_claims_deleted_proof, profiles::validate_profile_for_agent, progenitors, role_path,
+    validate_agent_was_admin_at_the_time, AllRoleClaimsDeletedProof, LinkTypes, RoleClaim,
+    UnitEntryTypes, ADMIN_ROLE,
 };
 
 /// Validation of the link that assignees use to claim roles, checks entrytypes, paths and that issuer was admin
@@ -106,6 +107,7 @@ pub fn validate_create_link_role_to_assignee(
 pub fn validate_delete_link_role_to_assignee(
     action_hash: ActionHash,
     action: DeleteLink,
+    original_action_hash: ActionHash,
     original_action: CreateLink,
     _base: AnyLinkableHash,
     _target: AnyLinkableHash,
@@ -125,23 +127,40 @@ pub fn validate_delete_link_role_to_assignee(
         )));
     };
 
-    let Ok(role) = String::from_utf8(tag.0) else {
-        return Ok(ValidateCallbackResult::Invalid(String::from(
-            "RoleToAssignee links must contain the role in their LinkTag",
-        )));
-    };
-
     let previous_record = must_get_valid_record(action.prev_action)?;
-    let Action::Delete(delete) = previous_record.action() else {
-        return Ok(ValidateCallbackResult::Invalid(String::from("Delete role assignment link must be committed immediately after deleting role_claim entries")));
+    let Action::Create(create) = previous_record.action() else {
+        return Ok(ValidateCallbackResult::Invalid(
+            String::from("Delete role assignment link must be committed immediately after creating an AllRoleClaimsDeletedProof entry.")
+        ));
     };
 
-    let deleted_role_claim = must_get_valid_record(delete.deletes_address.clone())?;
-    let Ok(role_claim) = RoleClaim::try_from(deleted_role_claim) else {
-        return Ok(ValidateCallbackResult::Invalid(String::from("Delete role assignment link must be committed immediately after deleting role_claim entries: the entry deleted was not a RoleClaim entry")));
+    let all_role_claims_deleted_proof_entry_type: EntryType =
+        UnitEntryTypes::AllRoleClaimsDeletedProof.try_into()?;
+
+    if create
+        .entry_type
+        .ne(&all_role_claims_deleted_proof_entry_type)
+    {
+        return Ok(ValidateCallbackResult::Invalid(
+            String::from("Delete role assignment link must be committed immediately after creating an entry of type AllRoleClaimsDeletedProof.")
+        ));
+    }
+
+    let Some(entry) = previous_record.entry().as_option() else {
+        return Ok(ValidateCallbackResult::Invalid(
+            String::from("Delete role assignment link must be committed immediately after creating an AllRoleClaimsDeletedProof entry that is not None.")
+        ));
     };
-    if !role_claim.role.eq(&role) {
-        return Ok(ValidateCallbackResult::Invalid(String::from("Delete role assignment link must be committed immediately after deleting role_claim entries: the role in the deleted RoleClaim is not the role in the RoleToAssignee link")));
+
+    let all_role_claims_deleted_proof = AllRoleClaimsDeletedProof::try_from(entry.clone())?;
+
+    if all_role_claims_deleted_proof
+        .assign_role_create_link_hash
+        .ne(&original_action_hash)
+    {
+        return Ok(ValidateCallbackResult::Invalid(
+            String::from("Delete role assignment link must be committed immediately after creating an AllRoleClaimsDeletedProof entry that references it.")
+        ));
     }
 
     Ok(ValidateCallbackResult::Valid)

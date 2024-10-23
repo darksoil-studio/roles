@@ -17,8 +17,41 @@ use hdi::prelude::*;
 #[derive(Clone, PartialEq)]
 #[hdk_entry_helper]
 pub struct AllRoleClaimsDeletedProof {
+    pub assign_role_create_link_hash: ActionHash,
     // This will point to the `Delete` RoleClaim actions for all the agents
     // associated with the assignee profile for the role
     pub role_claims_deletes_hashes: Vec<ActionHash>,
     pub lost_agents: Vec<AgentPubKey>,
+}
+
+///Validate the creation of a role claim for an agent
+pub fn validate_create_all_role_claims_deleted_proof(
+    action_hash: ActionHash,
+    action: EntryCreationAction,
+    all_role_claims_deleted_proof: AllRoleClaimsDeletedProof,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Valid)
+}
+
+///Validate the update role claim
+pub fn validate_update_all_role_claims_deleted_proof(
+    _action: Update,
+    _all_role_claims_deleted_proof: AllRoleClaimsDeletedProof,
+    _original_action: EntryCreationAction,
+    _original_all_role_claims_deleted_proof: AllRoleClaimsDeletedProof,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Invalid(
+        "Role Claims cannot be updated".to_string(),
+    ))
+}
+
+///Validate the deletion of a role claim for an Agent
+pub fn validate_delete_all_role_claims_deleted_proof(
+    _action: Delete,
+    _original_action: EntryCreationAction,
+    _original_all_role_claims_deleted_proof: AllRoleClaimsDeletedProof,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Invalid(
+        "AllRoleClaimsDeletedProofs cannot be deleted".to_string(),
+    ))
 }

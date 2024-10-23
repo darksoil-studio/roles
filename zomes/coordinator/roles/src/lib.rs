@@ -1,5 +1,8 @@
 use assignees::assign_role_to_single_agent;
+use hc_zome_trait_notifications::NotificationsZomeTrait;
+use hc_zome_traits::implemented_zome_traits;
 use hdk::prelude::*;
+use notifications::RolesNotifications;
 use role_claim::create_role_claim;
 use roles_integrity::*;
 

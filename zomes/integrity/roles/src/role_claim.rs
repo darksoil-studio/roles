@@ -30,8 +30,9 @@ pub fn validate_create_role_claim(
 
     let role_claim_entry_type: EntryType = UnitEntryTypes::RoleClaim.try_into()?;
 
-    let role_claim_creates: Vec<(ActionHash, RoleClaim)> = activity
+    let previous_role_claim_creates: Vec<(ActionHash, RoleClaim)> = activity
         .iter()
+        .filter(|activity| activity.action.action_address().ne(&action_hash))
         .filter_map(|activity| match &activity.action.hashed.content {
             Action::Create(create) => Some((activity.action.hashed.hash.clone(), create.clone())),
             _ => None,
@@ -44,7 +45,7 @@ pub fn validate_create_role_claim(
         })
         .collect::<ExternResult<Vec<(ActionHash, RoleClaim)>>>()?;
 
-    for (create_action_hash, previous_role_claim) in role_claim_creates {
+    for (create_action_hash, previous_role_claim) in previous_role_claim_creates {
         let is_deleted = deleted_hashes.contains(&create_action_hash);
 
         if is_deleted {

@@ -10,8 +10,8 @@ where
     P: serde::Serialize + std::fmt::Debug,
     R: DeserializeOwned + std::fmt::Debug,
 {
-    let response = call(
-        CallTargetCell::Local,
+    let response = call_remote(
+        agent_info()?.agent_latest_pubkey,
         zome_name.clone(),
         fn_name.clone(),
         None,

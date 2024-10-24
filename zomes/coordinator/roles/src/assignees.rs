@@ -47,10 +47,27 @@ pub fn assign_role_link_tag_to_role(tag: LinkTag) -> ExternResult<String> {
 }
 
 pub fn get_all_roles_strings() -> ExternResult<Vec<String>> {
-    let links = get_all_roles(())?;
-    let roles = links
+    let all_roles_path = all_roles_path()?;
+    let children_paths = all_roles_path.children_paths()?;
+
+    let roles = children_paths
         .into_iter()
-        .map(|link| assign_role_link_tag_to_role(link.tag))
+        .map(|path| {
+            let components: Vec<Component> = path.path.into();
+            let Some(component) = components.last() else {
+                return Err(wasm_error!(WasmErrorInner::Guest(format!(
+                    "Invalid path: no components"
+                ))));
+            };
+
+            let component_str = String::try_from(component).map_err(|_err| {
+                wasm_error!(WasmErrorInner::Guest(format!(
+                    "Invalid path: last component is not a string"
+                )))
+            })?;
+            Ok(component_str)
+        })
         .collect::<ExternResult<Vec<String>>>()?;
+
     Ok(roles)
 }

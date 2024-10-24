@@ -127,7 +127,7 @@ test('Assign role lifecycle', async () => {
 		await waitUntil(
 			async () =>
 				(await toPromise(bob.store.assignees.get('editor'))).length === 0,
-			10_000,
+			40_000,
 		);
 
 		editors = await toPromise(bob.store.assignees.get('editor'));

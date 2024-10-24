@@ -2,7 +2,9 @@ use hdk::prelude::*;
 use roles_integrity::{role_path, LinkTypes, ADMIN_ROLE};
 
 use crate::{
+    assignees::get_assignees_for_role,
     profiles::get_my_profile_hash,
+    role_claim::query_undeleted_role_claims_for_role,
     utils::{create_link_relaxed, ensure_relaxed},
 };
 
@@ -12,7 +14,10 @@ pub fn claim_admin_role_as_progenitor(_schedule: Option<Schedule>) -> Option<Sch
     let result = internal_claim_admin_role_as_progenitor();
     match result {
         Ok(()) => None,
-        _ => Some(Schedule::Persisted("*/5 * * * * * *".into())), // Every 5 seconds
+        Err(e) => {
+            error!("||||AAA {e:?}");
+            Some(Schedule::Persisted("*/5 * * * * * *".into())) // Every 5 seconds
+        }
     }
 }
 
@@ -23,6 +28,16 @@ pub fn internal_claim_admin_role_as_progenitor() -> ExternResult<()> {
             "Progenitor has not created their profile yet"
         ))));
     };
+
+    let assignees_links = get_assignees_for_role(ADMIN_ROLE.into())?;
+    let None = assignees_links
+        .iter()
+        .filter_map(|l| l.target.clone().into_action_hash())
+        .find(|profile_hash| profile_hash.eq(&my_profile_hash))
+    else {
+        return Ok(());
+    };
+    // error!("AAAA2 {}", my_role_claims.len());
 
     let path = role_path(&ADMIN_ROLE.to_string())?;
     ensure_relaxed(&path)?;

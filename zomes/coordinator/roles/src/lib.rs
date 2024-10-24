@@ -32,7 +32,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
         schedule("claim_admin_role_as_progenitor")?;
     }
     schedule("claim_roles_assigned_to_me")?;
-    schedule("unassign_pending_assignments")?;
+    schedule("unassign_pending_unassignments")?;
     schedule("create_all_role_claims_deleted_proofs_if_possible")?;
 
     let mut fns: BTreeSet<GrantedFunction> = BTreeSet::new();
@@ -91,7 +91,7 @@ pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
             if let Ok(Some(LinkTypes::PendingUnassignments)) =
                 LinkTypes::from_type(create_link.zome_index, create_link.link_type)
             {
-                if let Err(err) = notify_assignees(&action.hashed.hash, create_link) {
+                if let Err(err) = notify_pending_unassignment(&action.hashed.hash, create_link) {
                     error!("Error notifying assingee: {:?}", err);
                 }
             }
@@ -153,7 +153,11 @@ fn notify_pending_unassignment(
     };
     let agents = get_agents_for_profile(assignee_profile_action_hash.clone())?;
 
-    let Ok(role) = String::from_utf8(pending_unassignment_create_link.tag.0.clone()) else {
+    let tag_bytes = SerializedBytes::from(UnsafeBytes::from(
+        pending_unassignment_create_link.tag.clone().into_inner(),
+    ));
+
+    let Ok(tag) = PendingUnassignmentLinkTag::try_from(tag_bytes) else {
         return Err(wasm_error!(WasmErrorInner::Guest(format!(
             "RoleToAssignee links must contain the role in their LinkTag",
         ))));
@@ -161,14 +165,14 @@ fn notify_pending_unassignment(
 
     send_remote_signal(
         RolesRemoteSignal::NewPendingUnassignment {
-            role: role.clone(),
+            role: tag.role.clone(),
             pending_unassignment_create_link_hash: action_hash.clone(),
         },
         agents,
     )?;
     send_roles_notification(
         assignee_profile_action_hash,
-        RolesNotification::UnassignedRole { role },
+        RolesNotification::UnassignedRole { role: tag.role },
     )?;
 
     Ok(())

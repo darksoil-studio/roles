@@ -1,9 +1,9 @@
 use hdi::prelude::*;
 
 use crate::{
-    all_role_claims_deleted_proof, profiles::validate_profile_for_agent, progenitors, role_path,
-    validate_agent_was_admin_at_the_time, AllRoleClaimsDeletedProof, LinkTypes, RoleClaim,
-    UnitEntryTypes, ADMIN_ROLE,
+    profiles::validate_profile_for_agent, progenitors, role_path,
+    validate_agent_was_admin_at_the_time, AllRoleClaimsDeletedProof, LinkTypes, UnitEntryTypes,
+    ADMIN_ROLE,
 };
 
 /// Validation of the link that assignees use to claim roles, checks entrytypes, paths and that issuer was admin
@@ -60,34 +60,44 @@ pub fn validate_create_link_role_to_assignee(
                 ChainFilter::new(action_hash.clone()),
             )?;
 
-            let previous_admin_role_assigment_for_this_progenitor =
-                activity
-                    .into_iter()
-                    .find(|activity| match activity.action.action() {
-                        Action::CreateLink(create_link) => {
-                            let Ok(Some(LinkTypes::RoleToAssignee)) =
-                                LinkTypes::from_type(create_link.zome_index, create_link.link_type)
-                            else {
-                                return false;
-                            };
+            let previous_admin_role_assigment_for_this_progenitor = activity
+                .iter()
+                .filter(|activity| activity.action.action_address().ne(&action_hash))
+                .find(|activity| match activity.action.action() {
+                    Action::CreateLink(create_link) => {
+                        let Ok(Some(LinkTypes::RoleToAssignee)) =
+                            LinkTypes::from_type(create_link.zome_index, create_link.link_type)
+                        else {
+                            return false;
+                        };
 
-                            let Some(profile_hash) =
-                                create_link.target_address.clone().into_action_hash()
-                            else {
-                                return false;
-                            };
-                            let Ok(role) = String::from_utf8(create_link.tag.0.clone()) else {
-                                return false;
-                            };
+                        let Some(profile_hash) =
+                            create_link.target_address.clone().into_action_hash()
+                        else {
+                            return false;
+                        };
+                        error!(
+                            "YAVERAS {:?} {:?} {:?}",
+                            create_link,
+                            assignee_profile_hash,
+                            profile_hash.eq(&assignee_profile_hash)
+                        );
+                        let Ok(role) = String::from_utf8(create_link.tag.0.clone()) else {
+                            return false;
+                        };
 
-                            role.as_str() == ADMIN_ROLE && profile_hash.eq(&profile_hash)
-                        }
-                        _ => false,
-                    });
+                        role.as_str() == ADMIN_ROLE && profile_hash.eq(&assignee_profile_hash)
+                    }
+                    _ => false,
+                });
 
             if previous_admin_role_assigment_for_this_progenitor.is_none() {
                 return Ok(ValidateCallbackResult::Valid);
             } else {
+                error!(
+                    "Previous {:?} {:?}",
+                    previous_admin_role_assigment_for_this_progenitor, action_hash
+                );
                 return Ok(ValidateCallbackResult::Invalid(String::from(
                     "Progenitors can only assign the admin role to itself once.",
                 )));

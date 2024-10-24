@@ -462,9 +462,9 @@
                   }
                 },
                 {
-                  "name": "assignees",
+                  "name": "assigneesProfilesHashes",
                   "type": {
-                    "text": "AgentPubKey[]"
+                    "text": "ActionHash[]"
                   }
                 }
               ]
@@ -485,24 +485,13 @@
                   }
                 },
                 {
-                  "name": "assignee",
+                  "name": "assigneeProfileHash",
                   "type": {
-                    "text": "AgentPubKey"
+                    "text": "ActionHash"
                   }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "unassignMyRole",
-              "return": {
-                "type": {
-                  "text": "Promise<void>"
-                }
-              },
-              "parameters": [
+                },
                 {
-                  "name": "pendingUnassigmentCreateLinkHash",
+                  "name": "assignRoleCreateLinkHash",
                   "type": {
                     "text": "ActionHash"
                   }
@@ -548,24 +537,6 @@
           "members": [
             {
               "kind": "field",
-              "name": "_unassigningRoleCreateLinkHash",
-              "type": {
-                "text": "ActionHash[]"
-              },
-              "privacy": "private",
-              "default": "[]"
-            },
-            {
-              "kind": "field",
-              "name": "_claimingRoles",
-              "type": {
-                "text": "ActionHash[]"
-              },
-              "privacy": "private",
-              "default": "[]"
-            },
-            {
-              "kind": "field",
               "name": "myRoleClaims",
               "default": "new LazyMap((role: string) =>\n\t\tqueryLiveEntriesSignal(\n\t\t\tthis.client,\n\t\t\t() => this.client.queryUndeletedRoleClaimsForRole(role),\n\t\t\t'RoleClaim',\n\t\t),\n\t)",
               "description": "Role Claim"
@@ -594,12 +565,12 @@
             {
               "kind": "field",
               "name": "assignees",
-              "default": "new LazyMap(\n\t\t(role: string) =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesLinks = this.roleToAssigneeLinks.get(role).get();\n\t\t\t\tconst pendingUnassignments = this.pendingUnassignments.get();\n\t\t\t\tconst myRoleClaims = this.myRoleClaims.get(role).get();\n\n\t\t\t\tif (assigneesLinks.status !== 'completed') return assigneesLinks;\n\t\t\t\tif (pendingUnassignments.status !== 'completed')\n\t\t\t\t\treturn pendingUnassignments;\n\t\t\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\t\t\tlet assignees = uniquify(\n\t\t\t\t\tassigneesLinks.value.map(a => retype(a.target, HashType.AGENT)),\n\t\t\t\t);\n\n\t\t\t\tconst myPendingUnassignmentsForThisRole =\n\t\t\t\t\tpendingUnassignments.value.filter(\n\t\t\t\t\t\tpendingUnassignment =>\n\t\t\t\t\t\t\tencodeHashToBase64(\n\t\t\t\t\t\t\t\tretype(pendingUnassignment.target, HashType.AGENT),\n\t\t\t\t\t\t\t) === encodeHashToBase64(this.client.client.myPubKey) &&\n\t\t\t\t\t\t\tnew TextDecoder().decode(pendingUnassignment.tag) === role,\n\t\t\t\t\t);\n\t\t\t\tif (myPendingUnassignmentsForThisRole.length > 0) {\n\t\t\t\t\tassignees = assignees.filter(\n\t\t\t\t\t\ta =>\n\t\t\t\t\t\t\tencodeHashToBase64(a) !==\n\t\t\t\t\t\t\tencodeHashToBase64(this.client.client.myPubKey),\n\t\t\t\t\t);\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assignees,\n\t\t\t\t};\n\t\t\t}),\n\t)"
+              "default": "new LazyMap(\n\t\t(role: string) =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesLinks = this.roleToAssigneeLinks.get(role).get();\n\t\t\t\tconst pendingUnassignments = this.pendingUnassignments.get();\n\t\t\t\tconst myRoleClaims = this.myRoleClaims.get(role).get();\n\n\t\t\t\tif (assigneesLinks.status !== 'completed') return assigneesLinks;\n\t\t\t\tif (pendingUnassignments.status !== 'completed')\n\t\t\t\t\treturn pendingUnassignments;\n\t\t\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\t\t\t// const myPendingUnassignmentsForThisRole =\n\t\t\t\t// \tpendingUnassignments.value.filter(\n\t\t\t\t// \t\tpendingUnassignment =>\n\t\t\t\t// \t\t\tencodeHashToBase64(pendingUnassignment.target) ===\n\t\t\t\t// \t\t\t\tencodeHashToBase64(this.client.client.myPubKey) &&\n\t\t\t\t// \t\t\t(decode(pendingUnassignment.tag) as PendingUnassignmentLinkTag)\n\t\t\t\t// \t\t\t\t.role === role,\n\t\t\t\t// \t);\n\t\t\t\t// if (myPendingUnassignmentsForThisRole.length > 0) {\n\t\t\t\t// \tassigneesProfilesHashes = assigneesProfilesHashes.filter(\n\t\t\t\t// \t\ta =>\n\t\t\t\t// \t\t\tencodeHashToBase64(a) !==\n\t\t\t\t// \t\t\tencodeHashToBase64(this.client.client.myPubKey), //NOOOO\n\t\t\t\t// \t);\n\t\t\t\t// }\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assigneesLinks.value,\n\t\t\t\t};\n\t\t\t}),\n\t)"
             },
             {
               "kind": "field",
-              "name": "rolesForAgent",
-              "default": "new LazyHoloHashMap(\n\t\tassignee =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesByRoles = joinAsyncMap(\n\t\t\t\t\tmapValues(slice(this.assignees, this.allRoles), r => r.get()),\n\t\t\t\t);\n\t\t\t\tif (assigneesByRoles.status !== 'completed') return assigneesByRoles;\n\n\t\t\t\tconst assigneeRoles: string[] = [];\n\n\t\t\t\tfor (const [role, assignees] of Array.from(\n\t\t\t\t\tassigneesByRoles.value.entries(),\n\t\t\t\t)) {\n\t\t\t\t\tif (\n\t\t\t\t\t\tassignees.find(\n\t\t\t\t\t\t\ta => encodeHashToBase64(assignee) === encodeHashToBase64(a),\n\t\t\t\t\t\t)\n\t\t\t\t\t) {\n\t\t\t\t\t\tassigneeRoles.push(role);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assigneeRoles,\n\t\t\t\t};\n\t\t\t}),\n\t)"
+              "name": "rolesForProfile",
+              "default": "new LazyHoloHashMap(\n\t\t(profileHash: ActionHash) =>\n\t\t\tnew AsyncComputed(() => {\n\t\t\t\tconst assigneesByRoles = joinAsyncMap(\n\t\t\t\t\tmapValues(slice(this.assignees, this.allRoles), r => r.get()),\n\t\t\t\t);\n\t\t\t\tif (assigneesByRoles.status !== 'completed') return assigneesByRoles;\n\n\t\t\t\tconst assigneeRoles: string[] = [];\n\n\t\t\t\tfor (const [role, assigneesLinks] of Array.from(\n\t\t\t\t\tassigneesByRoles.value.entries(),\n\t\t\t\t)) {\n\t\t\t\t\tif (\n\t\t\t\t\t\tassigneesLinks.find(\n\t\t\t\t\t\t\ta =>\n\t\t\t\t\t\t\t\tencodeHashToBase64(profileHash) ===\n\t\t\t\t\t\t\t\tencodeHashToBase64(a.target),\n\t\t\t\t\t\t)\n\t\t\t\t\t) {\n\t\t\t\t\t\tassigneeRoles.push(role);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\treturn {\n\t\t\t\t\tstatus: 'completed',\n\t\t\t\t\tvalue: assigneeRoles,\n\t\t\t\t};\n\t\t\t}),\n\t)"
             },
             {
               "kind": "field",
@@ -608,7 +579,7 @@
             {
               "kind": "field",
               "name": "myRoles",
-              "default": "new AsyncComputed(() => {\n\t\tconst myRoles = this.rolesForAgent.get(this.client.client.myPubKey).get();\n\t\tif (myRoles.status !== 'completed') return myRoles;\n\n\t\tconst myRoleClaims = joinAsync(\n\t\t\tmyRoles.value.map(role => this.myRoleClaims.get(role).get()),\n\t\t);\n\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\tconst myClaimedRoles = myRoles.value.filter(\n\t\t\t(_, i) => myRoleClaims.value[i].length > 0,\n\t\t);\n\n\t\treturn {\n\t\t\tstatus: 'completed',\n\t\t\tvalue: myClaimedRoles,\n\t\t};\n\t})"
+              "default": "new AsyncComputed(() => {\n\t\t// const myRoles = this.rolesForProfile.get(this.client.client.myPubKey).get();\n\t\t// if (myRoles.status !== 'completed') return myRoles;\n\n\t\tconst myRoleClaims = joinAsync(\n\t\t\tthis.allRoles.map(role => this.myRoleClaims.get(role).get()),\n\t\t);\n\t\tif (myRoleClaims.status !== 'completed') return myRoleClaims;\n\n\t\tconst myClaimedRoles = myRoleClaims.value\n\t\t\t.filter((claims, i) => claims.length > 0)\n\t\t\t.map(claims => claims[0].entry.role);\n\n\t\treturn {\n\t\t\tstatus: 'completed',\n\t\t\tvalue: myClaimedRoles,\n\t\t};\n\t})"
             }
           ]
         }
@@ -909,6 +880,12 @@
                   "type": {
                     "text": "AgentPubKey"
                   }
+                },
+                {
+                  "name": "assignRoleCreateLinkHash",
+                  "type": {
+                    "text": "ActionHash"
+                  }
                 }
               ]
             },
@@ -922,9 +899,9 @@
               },
               "parameters": [
                 {
-                  "name": "agent",
+                  "name": "profileHash",
                   "type": {
-                    "text": "AgentPubKey"
+                    "text": "ActionHash"
                   }
                 }
               ]
@@ -940,9 +917,9 @@
                   }
                 },
                 {
-                  "name": "assignee",
+                  "name": "assigneeLink",
                   "type": {
-                    "text": "AgentPubKey"
+                    "text": "Link"
                   }
                 },
                 {
@@ -964,9 +941,9 @@
                   }
                 },
                 {
-                  "name": "assignees",
+                  "name": "assigneesLinks",
                   "type": {
-                    "text": "AgentPubKey[]"
+                    "text": "Link[]"
                   }
                 },
                 {
@@ -1101,97 +1078,6 @@
     },
     {
       "kind": "javascript-module",
-      "path": "src/elements/roles-for-agent.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "",
-          "name": "RolesForAgent",
-          "members": [
-            {
-              "kind": "field",
-              "name": "agent",
-              "type": {
-                "text": "AgentPubKey"
-              },
-              "attribute": "agent"
-            },
-            {
-              "kind": "field",
-              "name": "rolesStore",
-              "type": {
-                "text": "RolesStore"
-              }
-            },
-            {
-              "kind": "method",
-              "name": "roleSingularName",
-              "parameters": [
-                {
-                  "name": "role",
-                  "type": {
-                    "text": "string"
-                  }
-                }
-              ]
-            },
-            {
-              "kind": "method",
-              "name": "renderRoles",
-              "parameters": [
-                {
-                  "name": "roles",
-                  "type": {
-                    "text": "string[]"
-                  }
-                }
-              ]
-            }
-          ],
-          "attributes": [
-            {
-              "name": "agent",
-              "type": {
-                "text": "AgentPubKey"
-              },
-              "fieldName": "agent"
-            }
-          ],
-          "mixins": [
-            {
-              "name": "SignalWatcher",
-              "package": "@holochain-open-dev/signals"
-            }
-          ],
-          "superclass": {
-            "name": "LitElement",
-            "package": "lit"
-          },
-          "tagName": "roles-for-agent",
-          "customElement": true
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "RolesForAgent",
-          "declaration": {
-            "name": "RolesForAgent",
-            "module": "src/elements/roles-for-agent.ts"
-          }
-        },
-        {
-          "kind": "custom-element-definition",
-          "name": "roles-for-agent",
-          "declaration": {
-            "name": "RolesForAgent",
-            "module": "src/elements/roles-for-agent.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
       "path": "src/elements/roles-for-profile.ts",
       "declarations": [
         {
@@ -1237,15 +1123,6 @@
                   }
                 }
               ]
-            },
-            {
-              "kind": "method",
-              "name": "roles",
-              "return": {
-                "type": {
-                  "text": "AsyncResult<string[]>"
-                }
-              }
             }
           ],
           "attributes": [

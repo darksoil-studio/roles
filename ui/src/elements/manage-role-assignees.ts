@@ -9,10 +9,16 @@ import '@holochain-open-dev/profiles/dist/elements/search-profiles.js';
 import { SearchProfiles } from '@holochain-open-dev/profiles/dist/elements/search-profiles.js';
 import { SignalWatcher, toPromise } from '@holochain-open-dev/signals';
 import { HashType, retype } from '@holochain-open-dev/utils';
-import { ActionHash, AgentPubKey, encodeHashToBase64 } from '@holochain/client';
+import {
+	ActionHash,
+	AgentPubKey,
+	Link,
+	encodeHashToBase64,
+} from '@holochain/client';
 import { consume } from '@lit/context';
 import { msg, str } from '@lit/localize';
 import { mdiDelete, mdiInformationOutline } from '@mdi/js';
+import { decode } from '@msgpack/msgpack';
 import { SlDialog } from '@shoelace-style/shoelace';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
@@ -26,6 +32,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { rolesStoreContext } from '../context.js';
 import { RoleConfig, adminRoleConfig } from '../role-config.js';
 import { RolesStore } from '../roles-store.js';
+import { PendingUnassignmentLinkTag } from '../types.js';
 
 @customElement('manage-role-assignees')
 export class ManageRoleAssignees extends SignalWatcher(LitElement) {
@@ -87,10 +94,18 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 		this.committing = false;
 	}
 
-	async removeRole(role: string, assignee: AgentPubKey) {
+	async removeRole(
+		role: string,
+		assignee: AgentPubKey,
+		assignRoleCreateLinkHash: ActionHash,
+	) {
 		try {
 			this.removingRole = true;
-			await this.rolesStore.client.requestUnassignRole(role, assignee);
+			await this.rolesStore.client.requestUnassignRole(
+				role,
+				assignee,
+				assignRoleCreateLinkHash,
+			);
 
 			this.dispatchEvent(
 				new CustomEvent('unassig-role-requested', {
@@ -115,17 +130,20 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 		this.removingRole = false;
 	}
 
-	name(agent: AgentPubKey): string | undefined {
-		const profile = this.profilesStore.profiles.get(agent).latestVersion.get();
+	name(profileHash: ActionHash): string | undefined {
+		const profile = this.profilesStore.profiles
+			.get(profileHash)
+			.latestVersion.get();
 		if (profile.status !== 'completed') return undefined;
 		return profile.value?.entry.nickname;
 	}
 
 	renderRemoveRoleAction(
 		roleConfig: RoleConfig,
-		assignee: AgentPubKey,
+		assigneeLink: Link,
 		assigneesCount: number,
 	) {
+		const assigneeProfileHash = assigneeLink.target;
 		const pendingUnassignments = this.rolesStore.pendingUnassignments.get();
 		switch (pendingUnassignments.status) {
 			case 'pending':
@@ -139,9 +157,10 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 			case 'completed':
 				const pendingUnassignment = !!pendingUnassignments.value.find(
 					link =>
-						retype(link.target, HashType.AGENT).toString() ===
-							assignee.toString() &&
-						new TextDecoder().decode(link.tag) === roleConfig.role,
+						encodeHashToBase64(link.target) ===
+							encodeHashToBase64(assigneeProfileHash) &&
+						(decode(link.tag) as PendingUnassignmentLinkTag).role ===
+							roleConfig.role,
 				);
 				if (pendingUnassignment) {
 					return html`<sl-tag>${msg('Remove Role Requested')}</sl-tag>`;
@@ -151,13 +170,13 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 					<sl-dialog
 						.label=${msg(`Remove role`)}
 						id="remove-role-${roleConfig.role}-for-${encodeHashToBase64(
-							assignee,
+							assigneeProfileHash,
 						)}"
 					>
 						<div class="column" style="gap: 12px">
 							<span
 								>${msg(
-									str`Are you sure you want to request ${this.name(assignee)} to remove its ${roleConfig.singular_name} role?`,
+									str`Are you sure you want to request ${this.name(assigneeProfileHash)} to remove its ${roleConfig.singular_name} role?`,
 								)}</span
 							>
 							<span
@@ -171,7 +190,7 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 							@click=${() =>
 								(
 									this.shadowRoot!.getElementById(
-										`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assignee)}`,
+										`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assigneeProfileHash)}`,
 									) as SlDialog
 								).hide()}
 							>${msg('Cancel')}</sl-button
@@ -181,7 +200,11 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 							variant="primary"
 							.loading=${this.committing}
 							@click=${() => {
-								this.removeRole(roleConfig.role, assignee);
+								this.removeRole(
+									roleConfig.role,
+									assigneeProfileHash,
+									assigneeLink.create_link_hash,
+								);
 							}}
 							>${msg('Remove Role')}</sl-button
 						>
@@ -194,7 +217,7 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 						@click=${() => {
 							(
 								this.shadowRoot?.getElementById(
-									`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assignee)}`,
+									`remove-role-${roleConfig.role}-for-${encodeHashToBase64(assigneeProfileHash)}`,
 								) as SlDialog
 							).show();
 						}}
@@ -205,15 +228,16 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 
 	renderRole(
 		roleConfig: RoleConfig,
-		assignees: AgentPubKey[],
+		assigneesLinks: Link[],
 		iAmAdmin: boolean,
 	) {
+		const assigneesProfilesHashes = assigneesLinks.map(l => l.target);
 		return html` <sl-dialog
 				id="add-members-${roleConfig.role}"
 				.label=${msg(str`Add members as ${roleConfig.plural_name}`)}
 			>
 				<search-profiles
-					.excludedProfiles=${assignees}
+					.excludedProfiles=${assigneesProfilesHashes}
 					id="search-profiles-${roleConfig.role}"
 					.fieldLabel=${msg('Search Member')}
 					.emptyListPlaceholder=${msg('No members selected yet.')}
@@ -272,7 +296,7 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 				<span class="placeholder">${roleConfig.description}</span>
 
 				<div class="column" style="gap: 12px; margin-top: 24px;">
-					${assignees.length === 0
+					${assigneesProfilesHashes.length === 0
 						? html`
 								<div
 									class="column"
@@ -287,16 +311,18 @@ export class ManageRoleAssignees extends SignalWatcher(LitElement) {
 									>
 								</div>
 							`
-						: assignees.map(
-								a => html`
+						: assigneesLinks.map(
+								link => html`
 									<div class="row" style="align-items: center;">
-										<profile-list-item .agentPubKey=${a}></profile-list-item>
+										<profile-list-item
+											.profileHash=${link.target}
+										></profile-list-item>
 										<span style="flex: 1"></span>
 										${iAmAdmin
 											? this.renderRemoveRoleAction(
 													roleConfig,
-													a,
-													assignees.length,
+													link,
+													assigneesProfilesHashes.length,
 												)
 											: html``}
 									</div>

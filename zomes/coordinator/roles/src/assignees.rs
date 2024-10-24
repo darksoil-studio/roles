@@ -3,19 +3,24 @@ use roles_integrity::*;
 
 ///Assigning roles to agents
 #[hdk_extern]
-pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
+pub fn assign_role(input: AssignRoleInput) -> ExternResult<Vec<ActionHash>> {
     let path = role_path(&input.role)?;
     path.ensure()?;
 
-    for assignee in input.assignees_profiles_hashes {
-        create_link(
-            path.path_entry_hash()?,
-            assignee.clone(),
-            LinkTypes::RoleToAssignee,
-            input.role.clone(),
-        )?;
-    }
-    Ok(())
+    let actions_hashes = input
+        .assignees_profiles_hashes
+        .into_iter()
+        .map(|assignee_profile_hash| {
+            create_link(
+                path.path_entry_hash()?,
+                assignee_profile_hash.clone(),
+                LinkTypes::RoleToAssignee,
+                input.role.clone(),
+            )
+        })
+        .collect::<ExternResult<Vec<ActionHash>>>()?;
+
+    Ok(actions_hashes)
 }
 
 ///Get all agents that have been assigned a role

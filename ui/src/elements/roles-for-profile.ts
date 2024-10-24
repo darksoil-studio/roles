@@ -55,25 +55,8 @@ export class RolesForProfile extends SignalWatcher(LitElement) {
 		</div>`;
 	}
 
-	roles(): AsyncResult<string[]> {
-		const agents = this.profilesStore.agentsForProfile
-			.get(this.profileHash)
-			.get();
-		if (agents.status !== 'completed') return agents;
-
-		const rolesArray = joinAsync(
-			agents.value.map(agent => this.rolesStore.rolesForAgent.get(agent).get()),
-		);
-		if (rolesArray.status !== 'completed') return rolesArray;
-
-		return {
-			status: 'completed',
-			value: uniquify(flatten(rolesArray.value)),
-		};
-	}
-
 	render() {
-		const roles = this.roles();
+		const roles = this.rolesStore.rolesForProfile.get(this.profileHash).get();
 
 		switch (roles.status) {
 			case 'pending':

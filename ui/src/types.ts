@@ -24,3 +24,9 @@ export interface RoleClaim {
 
 	assign_role_create_link_hash: ActionHash;
 }
+
+export interface PendingUnassignmentLinkTag {
+	role: string;
+
+	assign_role_create_link_hash: ActionHash;
+}

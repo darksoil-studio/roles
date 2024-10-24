@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@holochain-open-dev/signals": "^0.300.7",
+    "@holochain-open-dev/profiles": "github:holochain-open-dev/profiles#fd272116648dc8928d887b77745e48ce3f78a387&path:ui",
     "@holochain-open-dev/utils": "^0.300.2",
     "@holochain/client": "^0.17.1",
     "@holochain/tryorama": "^0.16.0",

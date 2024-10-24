@@ -1,3 +1,4 @@
+import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
 import { AppBundle, AppWebsocket, encodeHashToBase64 } from '@holochain/client';
 import {
 	AgentApp,
@@ -113,6 +114,9 @@ export async function setup(scenario: Scenario) {
 		new RolesClient(appWs as any, 'roles_test', 'roles'),
 		config,
 	);
+	const aliceProfilesStore = new ProfilesStore(
+		new ProfilesClient(appWs as any, 'roles_test', 'profiles'),
+	);
 
 	patchCallZome(bob.appWs as AppWebsocket);
 	patchCallZome(carol.appWs as AppWebsocket);
@@ -121,10 +125,16 @@ export async function setup(scenario: Scenario) {
 		new RolesClient(bob.appWs as any, 'roles_test', 'roles'),
 		config,
 	);
+	const bobProfilesStore = new ProfilesStore(
+		new ProfilesClient(bob.appWs as any, 'roles_test', 'profiles'),
+	);
 
 	const carolStore = new RolesStore(
 		new RolesClient(carol.appWs as any, 'roles_test', 'roles'),
 		config,
+	);
+	const carolProfilesStore = new ProfilesStore(
+		new ProfilesClient(carol.appWs as any, 'roles_test', 'profiles'),
 	);
 
 	// Shortcut peer discovery through gossip and register all agents in every
@@ -135,14 +145,17 @@ export async function setup(scenario: Scenario) {
 		alice: {
 			player: { conductor: aliceConductor, appWs, ...alice },
 			store: aliceStore,
+			profilesStore: aliceProfilesStore,
 		},
 		bob: {
 			player: bob,
 			store: bobStore,
+			profilesStore: bobProfilesStore,
 		},
 		carol: {
 			player: carol,
 			store: carolStore,
+			profilesStore: carolProfilesStore,
 		},
 	};
 }

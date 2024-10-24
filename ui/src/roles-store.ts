@@ -22,12 +22,8 @@ import {
 	retype,
 } from '@holochain-open-dev/utils';
 import { ActionHash, Link, encodeHashToBase64 } from '@holochain/client';
-import { msg, str } from '@lit/localize';
-import { mdiSmartCard, mdiSmartCardOff } from '@mdi/js';
-import { decode, encode } from '@msgpack/msgpack';
 
-import { NOTIFICATIONS_TYPES } from './notifications.js';
-import { RoleConfig, adminRoleConfig } from './role-config.js';
+import { RoleConfig } from './role-config.js';
 import { RolesClient } from './roles-client.js';
 import {
 	joinAsyncMap,
@@ -42,11 +38,7 @@ export interface RolesStoreConfig {
 
 export class RolesStore {
 	private _unassigningRoleCreateLinkHash: ActionHash[] = [];
-	private _claimingRoles: ActionHash[] = [];
-	private _profilesAlreadyNotified = new HoloHashMap<
-		ActionHash,
-		Map<string, 'assigned' | 'unassigned'>
-	>();
+
 	constructor(
 		public client: RolesClient,
 		public config: RolesStoreConfig,
@@ -96,70 +88,6 @@ export class RolesStore {
 			}
 		});
 
-		effect(async () => {
-			const myRoles = this.rolesForAgent.get(this.client.client.myPubKey).get();
-			const pendingUnassignments = this.pendingUnassignments.get();
-			if (myRoles.status !== 'completed') return;
-			if (pendingUnassignments.status !== 'completed') return;
-
-			const myRoleClaims = joinAsync(
-				myRoles.value.map(role => this.myRoleClaims.get(role).get()),
-			);
-
-			if (myRoleClaims.status !== 'completed') return;
-
-			/** If I am assigned to the role but haven't claimed it, do so */
-
-			for (let i = 0; i < myRoles.value.length; i++) {
-				const role = myRoles.value[i];
-				const myRoleClaimsForThisRole = myRoleClaims.value[i];
-
-				const myPendingUnassignmentsForThisRole =
-					pendingUnassignments.value.filter(
-						pendingUnassignment =>
-							encodeHashToBase64(
-								retype(pendingUnassignment.target, HashType.AGENT),
-							) === encodeHashToBase64(this.client.client.myPubKey) &&
-							new TextDecoder().decode(pendingUnassignment.tag) === role,
-					);
-				if (
-					myPendingUnassignmentsForThisRole.length === 0 &&
-					myRoleClaimsForThisRole.length === 0
-				) {
-					const assigneesLinks = this.roleToAssigneeLinks.get(role).get();
-					if (assigneesLinks.status !== 'completed') return;
-					const link = assigneesLinks.value.find(
-						l =>
-							encodeHashToBase64(retype(l.target, HashType.AGENT)) ===
-							encodeHashToBase64(this.client.client.myPubKey),
-					);
-					if (link) {
-						if (
-							!this._claimingRoles.find(
-								actionHash =>
-									encodeHashToBase64(actionHash) ===
-									encodeHashToBase64(link.create_link_hash),
-							)
-						) {
-							this._claimingRoles.push(link.create_link_hash);
-							await this.client
-								.createRoleClaim({
-									role,
-									assign_role_create_link_hash: link.create_link_hash,
-								})
-								.finally(() => {
-									this._claimingRoles = this._claimingRoles.filter(
-										actionHash =>
-											encodeHashToBase64(actionHash) ===
-											encodeHashToBase64(link.create_link_hash),
-									);
-								});
-						}
-					}
-				}
-			}
-		});
-
 		if (notificationsStore) {
 			// notificationsStore.addTypes({
 			// 	[NOTIFICATIONS_TYPES.ASSIGNED_ROLE]: {
@@ -180,7 +108,6 @@ export class RolesStore {
 			// 					: config.roles_config.find(
 			// 							roleConfig => roleConfig.role === role,
 			// 						);
-
 			// 			return new AsyncState({
 			// 				status: 'completed',
 			// 				value: {
@@ -213,7 +140,6 @@ export class RolesStore {
 			// 					: config.roles_config.find(
 			// 							roleConfig => roleConfig.role === role,
 			// 						);
-
 			// 			return new AsyncState({
 			// 				status: 'completed',
 			// 				value: {
@@ -229,128 +155,26 @@ export class RolesStore {
 			// 		},
 			// 	},
 			// });
-			client.onSignal(async signal => {
-				if (
-					signal.type === 'LinkCreated' &&
-					signal.link_type === 'RoleToAssignee'
-				) {
-					const recipient = retype(
-						signal.action.hashed.content.target_address,
-						HashType.AGENT,
-					);
-					if (
-						encodeHashToBase64(recipient) ===
-						encodeHashToBase64(this.client.client.myPubKey)
-					)
-						return;
-
-					const profile = await toPromise(
-						notificationsStore.client.profilesStore.agentProfile.get(recipient),
-					);
-
-					if (!profile) return;
-
-					const role = new TextDecoder().decode(
-						signal.action.hashed.content.tag,
-					);
-
-					if (!this._profilesAlreadyNotified.get(profile.profileHash)) {
-						this._profilesAlreadyNotified.set(profile.profileHash, new Map());
-					}
-
-					const alreadyNotifiedTimestamp = this._profilesAlreadyNotified
-						.get(profile.profileHash)
-						.get(role);
-					if (alreadyNotifiedTimestamp === 'assigned') return;
-					this._profilesAlreadyNotified
-						.get(profile.profileHash)
-						.set(role, 'assigned');
-
-					// We just assigned a role: notify the assignee
-					await notificationsStore.client.createNotification({
-						content: encode({
-							role,
-						}),
-						notification_type: NOTIFICATIONS_TYPES.ASSIGNED_ROLE,
-						persistent: false,
-						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients_profiles_hashes: [profile.profileHash],
-					});
-				}
-				if (
-					signal.type === 'LinkCreated' &&
-					signal.link_type === 'PendingUnassignments'
-				) {
-					const recipient = retype(
-						signal.action.hashed.content.target_address,
-						HashType.AGENT,
-					);
-					if (
-						encodeHashToBase64(recipient) ===
-						encodeHashToBase64(this.client.client.myPubKey)
-					)
-						return;
-
-					const profile = await toPromise(
-						notificationsStore.client.profilesStore.agentProfile.get(recipient),
-					);
-
-					if (!profile) return;
-					const role = new TextDecoder().decode(
-						signal.action.hashed.content.tag,
-					);
-
-					if (!this._profilesAlreadyNotified.get(profile.profileHash)) {
-						this._profilesAlreadyNotified.set(profile.profileHash, new Map());
-					}
-
-					const alreadyNotifiedTimestamp = this._profilesAlreadyNotified
-						.get(profile.profileHash)
-						.get(role);
-					if (alreadyNotifiedTimestamp === 'unassigned') return;
-					this._profilesAlreadyNotified
-						.get(profile.profileHash)
-						.set(role, 'unassigned');
-
-					// We just unassigned a role: notify the assignee
-					await notificationsStore.client.createNotification({
-						content: encode({
-							role,
-						}),
-						notification_type: NOTIFICATIONS_TYPES.UNASSIGNED_ROLE,
-						persistent: false,
-						notification_group: encodeHashToBase64(signal.action.hashed.hash),
-						recipients_profiles_hashes: [profile.profileHash],
-					});
-				}
-			});
-
 			// if (profilesStore) {
 			// 	effect(() => {
 			// 		const myRoles = this.rolesForAgent
 			// 			.get(this.client.client.myPubKey)
 			// 			.get();
 			// 		const pendingUnassigments = this.pendingUnassignments.get();
-
 			// 		if (myRoles.status !== 'completed') return ;
 			// 		if (!myRoles.value.includes(adminRoleConfig.role)) return;
 			// 		if (pendingUnassigments.status !== 'completed')
 			// 			return ;
-
 			// 		// I am an admin: watch for new agents for the profiles of each
-
 			// 		for (const role of this.allRoles) {
 			// 			const assignees = this.assignees.get(role).get();
-
 			// 			if (assignees.status !== 'completed') continue;
-
 			// 			const allProfileHashes = joinAsync(
 			// 				assignees.value.map(agent =>
 			// 					profilesStore.agentProfile.get(agent).get(),
 			// 				),
 			// 			);
 			// 			if (allProfileHashes.status !== 'completed') continue;
-
 			// 			const uniqueProfilesHashes = uniquify(
 			// 				allProfileHashes.value
 			// 					.filter(p => p !== undefined)

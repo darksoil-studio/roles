@@ -1,7 +1,7 @@
 use hdk::prelude::*;
 use roles_integrity::RoleClaim;
 
-use crate::role_claim::create_role_claim;
+use crate::{role_claim::create_role_claim, unassignments::unassign_my_role};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum RolesRemoteSignal {
@@ -25,5 +25,9 @@ pub fn recv_remote_signal(signal: RolesRemoteSignal) -> ExternResult<()> {
             role,
             assign_role_create_link_hash,
         }),
+        RolesRemoteSignal::NewPendingUnassignment {
+            pending_unassignment_create_link_hash,
+            ..
+        } => unassign_my_role(pending_unassignment_create_link_hash),
     }
 }

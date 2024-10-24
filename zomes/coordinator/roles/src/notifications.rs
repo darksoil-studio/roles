@@ -9,10 +9,10 @@ use notifications_types::SendNotificationInput;
 
 use crate::profiles::call_local_zome;
 
-pub fn notifications_zome_name() -> ZomeName {
+pub fn notifications_zome_name() -> Option<ZomeName> {
     match std::option_env!("NOTIFICATIONS_COORDINATOR_ZOME_NAME") {
-        Some(zome_name) => zome_name.into(),
-        None => ZomeName::from("notifications"),
+        Some(zome_name) => Some(zome_name.into()),
+        None => None,
     }
 }
 
@@ -112,19 +112,26 @@ fn t_from_xliff(xliff_str: &str, source: &str) -> String {
     source.to_string()
 }
 
-fn call_notifications<R, P>(fn_name: FunctionName, payload: P) -> ExternResult<R>
+// Call the notifications zome, if it exists
+// If the notifications zome does not exist, it will return None
+fn call_notifications<R, P>(fn_name: FunctionName, payload: P) -> ExternResult<Option<R>>
 where
     P: serde::Serialize + std::fmt::Debug,
     R: DeserializeOwned + std::fmt::Debug,
 {
-    call_local_zome(notifications_zome_name(), fn_name, payload)
+    let Some(zome_name) = notifications_zome_name() else {
+        return Ok(None);
+    };
+    let result: R = call_local_zome(zome_name, fn_name, payload)?;
+    Ok(Some(result))
 }
 
 pub fn send_roles_notification(
     recipient_profile_hash: ActionHash,
     roles_notification: RolesNotification,
 ) -> ExternResult<()> {
-    call_notifications(
+    // We don't care in this case if the notification is not sent
+    let _result: Option<()> = call_notifications(
         "send_notification".into(),
         SendNotificationInput {
             zome_name: zome_info()?.name,
@@ -134,5 +141,7 @@ pub fn send_roles_notification(
             content: SerializedBytes::try_from(roles_notification)
                 .map_err(|err| wasm_error!(err))?,
         },
-    )
+    )?;
+
+    Ok(())
 }

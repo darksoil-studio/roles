@@ -57,6 +57,7 @@ rec {
               } ${happ} ${roles_to_modify} ${builtins.toString ui_port}
             '';
           };
+        flakeModules.builders = inputs.hc-infra.outputs.flakeModules.builders;
       };
 
       systems = builtins.attrNames inputs.holonix.devShells;

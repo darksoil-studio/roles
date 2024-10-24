@@ -1,7 +1,10 @@
 use hdk::prelude::*;
-use roles_integrity::{progenitors, ADMIN_ROLE};
+use roles_integrity::{role_path, LinkTypes, ADMIN_ROLE};
 
-use crate::{assignees::assign_role_to_single_assignee, profiles::get_my_profile_hash};
+use crate::{
+    profiles::get_my_profile_hash,
+    utils::{create_link_relaxed, ensure_relaxed},
+};
 
 /// This function will only be called if this agent is a progenitor AND it does not have a role claim for the admin role yet
 #[hdk_extern(infallible)]
@@ -21,15 +24,14 @@ pub fn internal_claim_admin_role_as_progenitor() -> ExternResult<()> {
         ))));
     };
 
-    assign_role_to_single_assignee(ADMIN_ROLE.to_string(), my_profile_hash)
-}
-
-pub fn claim_admin_role(my_profile_hash: ActionHash) -> ExternResult<()> {
-    // If I'm a progenitor, automatically claim the admin role
-    // create_role_claim(RoleClaim {
-    //     role: ADMIN_ROLE.to_string(),
-    //     assign_role_create_link_hash: create_link_action_hash,
-    // })?;
+    let path = role_path(&ADMIN_ROLE.to_string())?;
+    ensure_relaxed(&path)?;
+    create_link_relaxed(
+        path.path_entry_hash()?,
+        my_profile_hash,
+        LinkTypes::RoleToAssignee,
+        ADMIN_ROLE.to_string(),
+    )?;
 
     Ok(())
 }

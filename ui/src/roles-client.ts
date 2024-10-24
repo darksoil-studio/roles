@@ -1,26 +1,16 @@
-import { NotificationsClient } from '@darksoil-studio/notifications';
-import {
-	EntryRecord,
-	ZomeClient,
-	utf32Decode,
-} from '@holochain-open-dev/utils';
+import { EntryRecord, ZomeClient } from '@holochain-open-dev/utils';
 import {
 	ActionHash,
 	AgentPubKey,
 	AppClient,
-	CreateLink,
 	Delete,
-	DeleteLink,
 	EntryHash,
 	Link,
 	Record,
 	SignedActionHashed,
-	encodeHashToBase64,
 } from '@holochain/client';
 
-import { RolesNotification } from './notifications.js';
-import { RoleClaim } from './types.js';
-import { RolesSignal } from './types.js';
+import { RoleClaim, RolesSignal } from './types.js';
 
 export class RolesClient extends ZomeClient<RolesSignal> {
 	constructor(
@@ -84,10 +74,12 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	async requestUnassignRole(
 		role: string,
 		assignee: AgentPubKey,
+		assignRoleCreateLinkHash: ActionHash,
 	): Promise<void> {
 		await this.callZome('request_unassign_role', {
 			role,
 			assignee,
+			assign_role_create_link_hash: assignRoleCreateLinkHash,
 		});
 	}
 

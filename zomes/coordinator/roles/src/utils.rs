@@ -1,4 +1,4 @@
-use hdk::prelude::*;
+use hdk::{hdi::hash_path::path::root_hash, prelude::*};
 use roles_integrity::*;
 
 ///Allow other processes to get commited to source chain before commiting the commit
@@ -68,5 +68,27 @@ pub fn delete_relaxed(address: ActionHash) -> ExternResult<()> {
             .delete(DeleteInput::new(address, ChainTopOrdering::Relaxed))
     })?;
 
+    Ok(())
+}
+
+pub fn ensure_relaxed(path: &TypedPath) -> ExternResult<()> {
+    if !path.exists()? {
+        if path.is_root() {
+            create_link_relaxed(
+                root_hash()?,
+                path.path_entry_hash()?,
+                path.link_type,
+                path.make_tag()?,
+            )?;
+        } else if let Some(parent) = path.parent() {
+            ensure_relaxed(&parent)?;
+            create_link_relaxed(
+                parent.path_entry_hash()?,
+                path.path_entry_hash()?,
+                path.link_type,
+                path.make_tag()?,
+            )?;
+        }
+    }
     Ok(())
 }

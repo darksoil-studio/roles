@@ -72,10 +72,7 @@ pub fn run(workdir: PathBuf, args: RunArgs) {
         )
         .plugin(tauri_plugin_holochain::init(
             vec![].into(),
-            HolochainPluginConfig {
-                wan_network_config,
-                holochain_dir: conductor_dir,
-            },
+            HolochainPluginConfig::new(conductor_dir, wan_network_config),
         ))
         .setup(|app| {
             let handle = app.handle();

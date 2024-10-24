@@ -106,14 +106,14 @@ importers:
   ui:
     dependencies:
       '@darksoil-studio/notifications':
-        specifier: github:darksoil-studio/notifications#f10f69ab644d6d8b4078b0a44ad3bba8299f8042&path:ui
-        version: https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui(@types/react@18.3.11)
+        specifier: github:darksoil-studio/notifications#aae533d87ebe6348a64d45f178ae887604b11da8&path:ui
+        version: https://codeload.github.com/darksoil-studio/notifications/tar.gz/aae533d87ebe6348a64d45f178ae887604b11da8#path:ui(@types/react@18.3.11)
       '@holochain-open-dev/elements':
         specifier: ^0.300.1
         version: 0.300.1(@types/react@18.3.11)
       '@holochain-open-dev/profiles':
-        specifier: github:holochain-open-dev/profiles#4889ea139d506f76560ca75b24fb34b555c6fec6&path:ui
-        version: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6#path:ui(@types/react@18.3.11)
+        specifier: github:holochain-open-dev/profiles#fd272116648dc8928d887b77745e48ce3f78a387&path:ui
+        version: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/fd272116648dc8928d887b77745e48ce3f78a387#path:ui(@types/react@18.3.11)
       '@holochain-open-dev/signals':
         specifier: ^0.300.7
         version: 0.300.9(@types/react@18.3.11)
@@ -353,8 +353,8 @@ packages:
   '@dabh/diagnostics@2.0.3':
     resolution: {integrity: sha512-hrlQOIi7hAfzsMqlGSFyVucrx38O+j6wiGOf//H2ecvIEqYN4ADBSS2iLMh5UFyDunCNniUIPk/q3riFv45xRA==}
 
-  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui':
-    resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042}
+  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/aae533d87ebe6348a64d45f178ae887604b11da8#path:ui':
+    resolution: {path: ui, tarball: https://codeload.github.com/darksoil-studio/notifications/tar.gz/aae533d87ebe6348a64d45f178ae887604b11da8}
     version: 0.1.0
 
   '@docsearch/css@3.6.2':
@@ -688,6 +688,10 @@ packages:
 
   '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6#path:ui':
     resolution: {path: ui, tarball: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6}
+    version: 0.300.0
+
+  '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/fd272116648dc8928d887b77745e48ce3f78a387#path:ui':
+    resolution: {path: ui, tarball: https://codeload.github.com/holochain-open-dev/profiles/tar.gz/fd272116648dc8928d887b77745e48ce3f78a387}
     version: 0.300.0
 
   '@holochain-open-dev/signals@0.300.9':
@@ -3116,7 +3120,7 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/f10f69ab644d6d8b4078b0a44ad3bba8299f8042#path:ui(@types/react@18.3.11)':
+  '@darksoil-studio/notifications@https://codeload.github.com/darksoil-studio/notifications/tar.gz/aae533d87ebe6348a64d45f178ae887604b11da8#path:ui(@types/react@18.3.11)':
     dependencies:
       '@holochain-open-dev/elements': 0.300.1(@types/react@18.3.11)
       '@holochain-open-dev/profiles': https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6#path:ui(@types/react@18.3.11)
@@ -3351,6 +3355,23 @@ snapshots:
       - utf-8-validate
 
   '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/4889ea139d506f76560ca75b24fb34b555c6fec6#path:ui(@types/react@18.3.11)':
+    dependencies:
+      '@holochain-open-dev/elements': 0.300.1(@types/react@18.3.11)
+      '@holochain-open-dev/signals': 0.300.9(@types/react@18.3.11)
+      '@holochain-open-dev/utils': 0.300.5
+      '@holochain/client': 0.17.1
+      '@lit/context': 1.1.3
+      '@lit/localize': 0.12.2
+      '@mdi/js': 7.4.47
+      '@msgpack/msgpack': 2.8.0
+      '@shoelace-style/shoelace': 2.17.1(@types/react@18.3.11)
+      lit: 3.2.1
+    transitivePeerDependencies:
+      - '@types/react'
+      - bufferutil
+      - utf-8-validate
+
+  '@holochain-open-dev/profiles@https://codeload.github.com/holochain-open-dev/profiles/tar.gz/fd272116648dc8928d887b77745e48ce3f78a387#path:ui(@types/react@18.3.11)':
     dependencies:
       '@holochain-open-dev/elements': 0.300.1(@types/react@18.3.11)
       '@holochain-open-dev/signals': 0.300.9(@types/react@18.3.11)

@@ -566,12 +566,6 @@
             },
             {
               "kind": "field",
-              "name": "_profilesAlreadyNotified",
-              "privacy": "private",
-              "default": "new HoloHashMap<\n\t\tActionHash,\n\t\tMap<string, 'assigned' | 'unassigned'>\n\t>()"
-            },
-            {
-              "kind": "field",
               "name": "myRoleClaims",
               "default": "new LazyMap((role: string) =>\n\t\tqueryLiveEntriesSignal(\n\t\t\tthis.client,\n\t\t\t() => this.client.queryUndeletedRoleClaimsForRole(role),\n\t\t\t'RoleClaim',\n\t\t),\n\t)",
               "description": "Role Claim"

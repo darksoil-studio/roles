@@ -1,7 +1,51 @@
 use hdk::prelude::*;
 use roles_integrity::*;
 
-use crate::utils::create_relaxed;
+use crate::{
+    assignees::{get_all_roles_strings, get_assignees_for_role},
+    profiles::get_my_profile_hash,
+    utils::create_relaxed,
+};
+
+#[hdk_extern(infallible)]
+pub fn claim_roles_assigned_to_me(_schedule: Option<Schedule>) -> Option<Schedule> {
+    if let Err(err) = internal_claim_roles_assigned_to_me() {
+        error!("Error calling claim_roles_assigned_to_me: {err:?}");
+    }
+    Some(Schedule::Persisted("*/30 * * * * * *".into()))
+}
+
+/** If I am assigned to the role but haven't claimed it, do so */
+fn internal_claim_roles_assigned_to_me() -> ExternResult<()> {
+    let Some(my_profile_hash) = get_my_profile_hash()? else {
+        return Ok(()); // We don't have a profile yet so we can't have any roles assigned
+    };
+
+    let roles = get_all_roles_strings()?;
+
+    for role in roles {
+        let assignees_links = get_assignees_for_role(role.clone())?;
+
+        for assignee_link in assignees_links {
+            let Some(assignee_profile_action_hash) = assignee_link.target.into_action_hash() else {
+                continue;
+            };
+            if assignee_profile_action_hash.ne(&my_profile_hash) {
+                continue;
+            }
+
+            let claims = query_undeleted_role_claims_for_role(role.clone())?;
+            if claims.len() == 0 {
+                create_role_claim(RoleClaim {
+                    role: role.clone(),
+                    assign_role_create_link_hash: assignee_link.create_link_hash,
+                })?;
+            }
+        }
+    }
+
+    Ok(())
+}
 
 ///Claiming a role on agents source chain
 #[hdk_extern]
@@ -61,11 +105,6 @@ pub fn query_undeleted_role_claims_for_role(role: String) -> ExternResult<Vec<Re
         .collect();
 
     Ok(records_for_role)
-}
-
-///Delete role claim (removing role)
-pub fn delete_role_claim(original_role_claim_hash: ActionHash) -> ExternResult<ActionHash> {
-    delete_entry(original_role_claim_hash)
 }
 
 ///Find all deletions for role claim

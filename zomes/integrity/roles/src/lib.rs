@@ -1,5 +1,7 @@
 use hdi::prelude::*;
 
+pub use roles_types::*;
+
 pub mod profiles;
 
 pub mod role_claim;

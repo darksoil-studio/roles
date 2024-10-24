@@ -2,14 +2,16 @@ use hc_zome_trait_notifications::NotificationsZomeTrait;
 use hc_zome_traits::implemented_zome_traits;
 use hdk::prelude::*;
 use notifications::{send_roles_notification, RolesNotification, RolesNotifications};
-use profiles::{get_agents_for_profile, get_my_profile_hash};
+use profiles::get_agents_for_profile;
 use remote_signal::RolesRemoteSignal;
 use roles_integrity::*;
 
+pub mod all_role_claims_deleted_proof;
 pub mod assignees;
 pub mod progenitors;
 pub mod remote_signal;
 pub mod role_claim;
+pub mod unassignments;
 pub mod utils;
 
 pub mod notifications;
@@ -30,6 +32,9 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
         schedule("claim_admin_role_as_progenitor")?;
     }
     schedule("claim_roles_assigned_to_me")?;
+    schedule("unassign_pending_assignments")?;
+    schedule("create_all_role_claims_deleted_proofs_if_possible")?;
+
     let mut fns: BTreeSet<GrantedFunction> = BTreeSet::new();
     fns.insert((zome_info()?.name, FunctionName::from("recv_remote_signal")));
     let functions = GrantedFunctions::Listed(fns);

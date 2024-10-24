@@ -95,3 +95,25 @@ pub fn validate_agent_had_undeleted_role_claim_at_the_time_with_zome_index(
         "Agent did not have the RoleClaim for the role {role} at the time of committing the action",
     )));
 }
+
+/// Input structure for assigning roles
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AssignRoleInput {
+    pub role: String,
+    pub assignees_profiles_hashes: Vec<ActionHash>,
+}
+
+/// Input structure for unassigning roles
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RequestUnassignRoleInput {
+    pub role: String,
+    pub assignee_profile_hash: ActionHash,
+    pub assign_role_create_link_hash: ActionHash,
+}
+
+/// Input structure for unassigning roles
+#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
+pub struct PendingUnassignmentLinkTag {
+    pub role: String,
+    pub assign_role_create_link_hash: ActionHash,
+}

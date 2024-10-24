@@ -1,5 +1,6 @@
 use hdi::prelude::*;
 use profiles_types::Profile;
+use roles_types::PendingUnassignmentLinkTag;
 
 use crate::{
     profiles::validate_profile_for_agent, validate_agent_was_admin_at_the_time, LinkTypes,
@@ -21,9 +22,11 @@ pub fn validate_create_link_pending_unassignments(
                 "No action hash associated with link".to_string()
             )))?;
 
-    let Ok(_role) = String::from_utf8(tag.0) else {
+    let tag_bytes = SerializedBytes::from(UnsafeBytes::from(tag.into_inner()));
+
+    let Ok(_tag) = PendingUnassignmentLinkTag::try_from(tag_bytes) else {
         return Ok(ValidateCallbackResult::Invalid(String::from(
-            "RoleToAssignee links must contain the role in their LinkTag",
+            "RoleToAssignee links must contain a PendingUnassignmentLinkTag in their LinkTag",
         )));
     };
 

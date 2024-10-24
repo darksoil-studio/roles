@@ -8,7 +8,7 @@
         workspacePath = inputs.self.outPath;
         crateCargoToml = ./Cargo.toml;
         cargoArtifacts = inputs'.hc-infra.packages.zomeCargoArtifacts;
-        zomeEnvironmentVariables = {
+        zomeEnvironmentVars = {
           NOTIFICATIONS_COORDINATOR_ZOME_NAME =
             notifications_coordinator_zome_name;
           PROFILES_COORDINATOR_ZOME_NAME = profiles_coordinator_zome_name;

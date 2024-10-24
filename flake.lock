@@ -5242,11 +5242,11 @@
         "webkitgtknixpkgs": "webkitgtknixpkgs_3"
       },
       "locked": {
-        "lastModified": 1729757218,
-        "narHash": "sha256-NWjz8ptpFZgFQNvvjK3TPX/CXbxHl4+pwNkptaDERso=",
+        "lastModified": 1729783774,
+        "narHash": "sha256-bsU42V409p2tcutre8um9Ze088IRLFceKcKdDAFEKbw=",
         "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "34541cae075572f357536510a061d49263e52197",
+        "rev": "818d08fc589140352e82373eb57cf608adf39d18",
         "type": "github"
       },
       "original": {

@@ -1,15 +1,19 @@
-use assignees::assign_role_to_single_assignee;
 use hc_zome_trait_notifications::NotificationsZomeTrait;
 use hc_zome_traits::implemented_zome_traits;
 use hdk::prelude::*;
-use notifications::RolesNotifications;
-use role_claim::create_role_claim;
+use notifications::{send_roles_notification, RolesNotification, RolesNotifications};
+use profiles::{get_agents_for_profile, get_my_profile_hash};
+use remote_signal::RolesRemoteSignal;
 use roles_integrity::*;
 
 pub mod assignees;
-pub mod notifications;
+pub mod progenitors;
+pub mod remote_signal;
 pub mod role_claim;
 pub mod utils;
+
+pub mod notifications;
+pub mod profiles;
 
 #[implemented_zome_traits]
 pub enum ZomeTraits {
@@ -19,20 +23,22 @@ pub enum ZomeTraits {
 ///initial function called when entering happ (if Agent is progenitor then Admin role is claimed)
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
-    // If I'm a progenitor, automatically claim the admin role
     let agent_info = agent_info()?;
     let progenitors = progenitors(())?;
 
     if progenitors.contains(&agent_info.agent_initial_pubkey) {
-        let create_link_action_hash = assign_role_to_single_assignee(
-            ADMIN_ROLE.to_string(),
-            agent_info.agent_initial_pubkey,
-        )?;
-        create_role_claim(RoleClaim {
-            role: ADMIN_ROLE.to_string(),
-            assign_role_create_link_hash: create_link_action_hash,
-        })?;
+        schedule("claim_admin_role_as_progenitor")?;
     }
+    schedule("claim_roles_assigned_to_me")?;
+    let mut fns: BTreeSet<GrantedFunction> = BTreeSet::new();
+    fns.insert((zome_info()?.name, FunctionName::from("recv_remote_signal")));
+    let functions = GrantedFunctions::Listed(fns);
+    let cap_grant = ZomeCallCapGrant {
+        tag: String::from("recv_remote_signal"),
+        access: CapAccess::Unrestricted,
+        functions,
+    };
+    create_cap_grant(cap_grant)?;
 
     Ok(InitCallbackResult::Pass)
 }
@@ -69,10 +75,98 @@ pub enum Signal {
 #[hdk_extern(infallible)]
 pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     for action in committed_actions {
+        if let Action::CreateLink(create_link) = &action.hashed.content {
+            if let Ok(Some(LinkTypes::RoleToAssignee)) =
+                LinkTypes::from_type(create_link.zome_index, create_link.link_type)
+            {
+                if let Err(err) = notify_assignees(&action.hashed.hash, create_link) {
+                    error!("Error notifying assingee: {:?}", err);
+                }
+            }
+            if let Ok(Some(LinkTypes::PendingUnassignments)) =
+                LinkTypes::from_type(create_link.zome_index, create_link.link_type)
+            {
+                if let Err(err) = notify_assignees(&action.hashed.hash, create_link) {
+                    error!("Error notifying assingee: {:?}", err);
+                }
+            }
+        }
         if let Err(err) = signal_action(action) {
             error!("Error signaling new action: {:?}", err);
         }
     }
+}
+
+fn notify_assignees(
+    action_hash: &ActionHash,
+    assign_role_create_link: &CreateLink,
+) -> ExternResult<()> {
+    let Some(assignee_profile_action_hash) = assign_role_create_link
+        .target_address
+        .clone()
+        .into_action_hash()
+    else {
+        return Err(wasm_error!(WasmErrorInner::Guest(format!(
+            "Unreachable: RoleToAssignee link does not point to an ActionHash"
+        ))));
+    };
+    let agents = get_agents_for_profile(assignee_profile_action_hash.clone())?;
+
+    let Ok(role) = String::from_utf8(assign_role_create_link.tag.0.clone()) else {
+        return Err(wasm_error!(WasmErrorInner::Guest(format!(
+            "RoleToAssignee links must contain the role in their LinkTag",
+        ))));
+    };
+
+    send_remote_signal(
+        RolesRemoteSignal::NewRoleAssigned {
+            role: role.clone(),
+            assign_role_create_link_hash: action_hash.clone(),
+        },
+        agents,
+    )?;
+    send_roles_notification(
+        assignee_profile_action_hash,
+        RolesNotification::AssignedRole { role },
+    )?;
+
+    Ok(())
+}
+
+fn notify_pending_unassignment(
+    action_hash: &ActionHash,
+    pending_unassignment_create_link: &CreateLink,
+) -> ExternResult<()> {
+    let Some(assignee_profile_action_hash) = pending_unassignment_create_link
+        .target_address
+        .clone()
+        .into_action_hash()
+    else {
+        return Err(wasm_error!(WasmErrorInner::Guest(format!(
+            "Unreachable: RoleToAssignee link does not point to an ActionHash"
+        ))));
+    };
+    let agents = get_agents_for_profile(assignee_profile_action_hash.clone())?;
+
+    let Ok(role) = String::from_utf8(pending_unassignment_create_link.tag.0.clone()) else {
+        return Err(wasm_error!(WasmErrorInner::Guest(format!(
+            "RoleToAssignee links must contain the role in their LinkTag",
+        ))));
+    };
+
+    send_remote_signal(
+        RolesRemoteSignal::NewPendingUnassignment {
+            role: role.clone(),
+            pending_unassignment_create_link_hash: action_hash.clone(),
+        },
+        agents,
+    )?;
+    send_roles_notification(
+        assignee_profile_action_hash,
+        RolesNotification::UnassignedRole { role },
+    )?;
+
+    Ok(())
 }
 
 ///Generate signals to handle all the actions made with module

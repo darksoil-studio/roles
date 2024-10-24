@@ -2,8 +2,8 @@ use hdk::prelude::*;
 use roles_integrity::*;
 
 use crate::{
-    role_claim::{create_role_claim, query_undeleted_role_claims_for_role},
-    utils::{delete_link_relaxed, delete_relaxed},
+    role_claim::query_undeleted_role_claims_for_role,
+    utils::{create_link_relaxed, delete_link_relaxed, delete_relaxed},
 };
 
 ///Input structure for assigning roles
@@ -20,19 +20,21 @@ pub struct RequestUnassignRoleInput {
     pub assignee_profile_hash: ActionHash,
 }
 
-/// Assign role function used in init function
+/// Assign role function used in claim_admin_role_as_progenitor function
 pub fn assign_role_to_single_assignee(
     role: String,
     assignee_profile_hash: ActionHash,
-) -> ExternResult<ActionHash> {
+) -> ExternResult<()> {
     let path = role_path(&role)?;
     path.ensure()?;
-    create_link(
+    create_link_relaxed(
         path.path_entry_hash()?,
         assignee_profile_hash,
         LinkTypes::RoleToAssignee,
         role,
-    )
+    )?;
+
+    Ok(())
 }
 
 ///Assigning roles to agents
@@ -42,22 +44,24 @@ pub fn assign_role(input: AssignRoleInput) -> ExternResult<()> {
     path.ensure()?;
 
     for assignee in input.assignees_profiles_hashes {
-        let assign_role_create_link_hash = create_link(
+        create_link(
             path.path_entry_hash()?,
             assignee.clone(),
             LinkTypes::RoleToAssignee,
             input.role.clone(),
         )?;
-        let agent_info = agent_info()?;
-        if assignee.eq(&agent_info.agent_latest_pubkey) {
-            create_role_claim(RoleClaim {
-                role: input.role.clone(),
-                assign_role_create_link_hash,
-            })?;
-        }
     }
     Ok(())
 }
+
+#[hdk_extern(infallible)]
+pub fn claim_roles_assigned_to_me(schedule: Option<Schedule>) -> Option<Schedule> {
+    if let Err(err) = internal_claim_roles_assigned_to_me() {
+        error!("Error calling claim_roles_assigned_to_me: {err:?}");
+    }
+    Some(Schedule::Persisted("*/30 * * * * * *".into()))
+}
+fn internal_claim_roles_assigned_to_me() -> ExternResult<()> {}
 
 ///Generating path to pending_unassignments
 fn pending_unassignments_path() -> Path {
@@ -120,11 +124,11 @@ pub fn unassign_my_role(pending_unassignment_link: ActionHash) -> ExternResult<(
         Ok(role_claim_records[0].clone())
     }?;
 
-    let role_claim = RoleClaim::try_from(role_claim_record.clone())?;
+    // let role_claim = RoleClaim::try_from(role_claim_record.clone())?;
     delete_relaxed(role_claim_record.action_address().clone())?;
-    delete_link_relaxed(role_claim.assign_role_create_link_hash)?;
+    // delete_link_relaxed(role_claim.assign_role_create_link_hash)?;
 
-    delete_link_relaxed(pending_unassignment_link)?;
+    // delete_link_relaxed(pending_unassignment_link)?;
     Ok(())
 }
 

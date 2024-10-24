@@ -12,6 +12,7 @@ hdk = { workspace = true }
 
 serde = { workspace = true }
 
+notifications_types = { git = "https://github.com/darksoil-studio/notifications", branch = "main" }
 roles_integrity = { path = "../../integrity/roles", package = "roles_integrity" }
 hc_zome_trait_notifications = { git = "https://github.com/darksoil-studio/notifications", branch = "main" }
 hc_zome_traits = { git = "https://github.com/holochain-open-dev/zome-traits", branch = "main" }

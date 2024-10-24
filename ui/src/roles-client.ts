@@ -27,7 +27,6 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 		public client: AppClient,
 		public roleName: string,
 		public zomeName = 'roles',
-		public notificationsClient?: NotificationsClient,
 	) {
 		super(client, roleName, zomeName);
 	}
@@ -105,18 +104,18 @@ export class RolesClient extends ZomeClient<RolesSignal> {
 	}
 
 	/** Notifications */
-	async sendNotification(
-		recipientProfileHash: ActionHash,
-		notification: RolesNotification,
-	) {
-		if (this.notificationsClient) {
-			return this.notificationsClient.sendNotification(
-				recipientProfileHash,
-				this.zomeName,
-				notification.type,
-				`${encodeHashToBase64(recipientProfileHash)}-${notification.role}`,
-				notification,
-			);
-		}
-	}
+	// async sendNotification(
+	// 	recipientProfileHash: ActionHash,
+	// 	notification: RolesNotification,
+	// ) {
+	// 	if (this.notificationsClient) {
+	// 		return this.notificationsClient.sendNotification(
+	// 			recipientProfileHash,
+	// 			this.zomeName,
+	// 			notification.type,
+	// 			`${encodeHashToBase64(recipientProfileHash)}-${notification.role}`,
+	// 			notification,
+	// 		);
+	// 	}
+	// }
 }
